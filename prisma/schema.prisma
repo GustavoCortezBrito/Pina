@@ -1,0 +1,614 @@
+// Schema do PinaSystem.
+// Convenções:
+//   - campos monetários (valor*, renda*) são inteiros em CENTAVOS;
+//   - percentuais são Decimal(7,4) (ex.: 10.0000 = 10%);
+//   - datas sem hora (vencimento, competência...) usam @db.Date e são tratadas em UTC.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────── Autenticação (Better Auth) ─────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String?   @default("operador") // admin | operador
+  banned        Boolean?  @default(false) // usuário desativado
+  banReason     String?
+  banExpires    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions   Session[]
+  accounts   Account[]
+  pagamentos Pagamento[]
+  auditLogs  AuditLog[]
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ───────────────────────── Imóveis ─────────────────────────
+
+enum TipoImovel {
+  CASA
+  APARTAMENTO
+  KITNET
+  SALA_COMERCIAL
+  GALPAO
+  TERRENO
+  OUTRO
+}
+
+enum StatusImovel {
+  DISPONIVEL
+  ALUGADO
+  RESERVADO
+  EM_REFORMA
+  INATIVO
+}
+
+enum Mobilia {
+  NAO
+  SEMI
+  SIM
+}
+
+model Empreendimento {
+  id           String   @id @default(cuid())
+  nome         String
+  cep          String?
+  logradouro   String?
+  numero       String?
+  bairro       String?
+  cidade       String   @default("Barretos")
+  uf           String   @default("SP")
+  observacoes  String?
+  imoveis      Imovel[]
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model Imovel {
+  id        String       @id @default(cuid())
+  codigo    String       @unique // ex.: "ADM-02", "CASA-07"
+  tipo      TipoImovel
+  status    StatusImovel @default(DISPONIVEL)
+  titulo    String // ex.: "Apto 02 – Ed. ADM"
+  descricao String?
+
+  empreendimentoId String?
+  empreendimento   Empreendimento? @relation(fields: [empreendimentoId], references: [id], onDelete: SetNull)
+  proprietarioId   String?
+  proprietario     Pessoa?         @relation("ProprietarioImovel", fields: [proprietarioId], references: [id], onDelete: SetNull)
+
+  cep         String?
+  logradouro  String?
+  numero      String?
+  complemento String? // "Apto 02", "Fundos"
+  bairro      String?
+  cidade      String  @default("Barretos")
+  uf          String  @default("SP")
+
+  quartos         Int      @default(0)
+  suites          Int      @default(0)
+  banheiros       Int      @default(0)
+  vagas           Int      @default(0)
+  areaM2          Float?
+  mobilia         Mobilia  @default(NAO)
+  aceitaPet       Boolean  @default(false)
+  caracteristicas String[] // ["ar-condicionado", "fechadura digital", ...]
+
+  valorAluguel    Int? // centavos (valor de referência)
+  valorCondominio Int? // centavos/mês
+  valorIptuAnual  Int? // centavos/ano
+
+  matricula         String?
+  inscricaoIptu     String?
+  instalacaoAgua    String?
+  instalacaoEnergia String?
+  observacoes       String?
+
+  arquivos    Arquivo[]
+  contratos   Contrato[]
+  despesas    Despesa[]
+  manutencoes Manutencao[]
+
+  deletadoEm   DateTime?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  @@index([status])
+  @@index([tipo])
+  @@index([empreendimentoId])
+}
+
+// ───────────────────────── Pessoas ─────────────────────────
+
+enum TipoPessoa {
+  PF
+  PJ
+}
+
+enum PapelPessoa {
+  INQUILINO
+  FIADOR
+  PROPRIETARIO
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  UNIAO_ESTAVEL
+  DIVORCIADO
+  SEPARADO
+  VIUVO
+}
+
+model Pessoa {
+  id             String        @id @default(cuid())
+  tipo           TipoPessoa    @default(PF)
+  papeis         PapelPessoa[]
+  nome           String // nome completo ou razão social
+  nomeFantasia   String?
+  documento      String        @unique // CPF ou CNPJ, só dígitos
+  rg             String?
+  orgaoEmissor   String?
+  dataNascimento DateTime?     @db.Date
+  estadoCivil    EstadoCivil?
+  profissao      String?
+  rendaMensal    Int? // centavos
+  nacionalidade  String?       @default("brasileira")
+
+  email          String?
+  telefone1      String?
+  telefone1Whats Boolean @default(true)
+  telefone2      String?
+
+  cep         String?
+  logradouro  String?
+  numero      String?
+  complemento String?
+  bairro      String?
+  cidade      String?
+  uf          String?
+
+  conjugeNome            String?
+  conjugeDocumento       String?
+  representanteNome      String? // PJ
+  representanteDocumento String? // PJ
+  observacoes            String?
+
+  arquivos  Arquivo[]
+  contratos ContratoParte[]
+  imoveis   Imovel[]        @relation("ProprietarioImovel")
+
+  deletadoEm   DateTime?
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @updatedAt
+
+  @@index([nome])
+}
+
+// ───────────────────────── Contratos ─────────────────────────
+
+enum StatusContrato {
+  RASCUNHO
+  ATIVO
+  ENCERRADO
+  RESCINDIDO
+  RENOVADO
+}
+
+enum TipoGarantia {
+  SEM_GARANTIA
+  FIADOR
+  CAUCAO
+  SEGURO_FIANCA
+  TITULO_CAPITALIZACAO
+}
+
+enum IndiceReajuste {
+  IGPM
+  IPCA
+  INPC
+  IVAR
+  FIXO
+  NENHUM
+}
+
+enum Finalidade {
+  RESIDENCIAL
+  COMERCIAL
+}
+
+enum PapelContrato {
+  LOCATARIO
+  FIADOR
+}
+
+model Contrato {
+  id         String         @id @default(cuid())
+  numero     Int            @unique @default(autoincrement())
+  status     StatusContrato @default(RASCUNHO)
+  finalidade Finalidade     @default(RESIDENCIAL)
+
+  imovelId String
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  dataInicio        DateTime @db.Date
+  prazoMeses        Int      @default(30)
+  dataFim           DateTime @db.Date
+  valorAluguel      Int // centavos — valor vigente (após reajustes)
+  valorInicial      Int // centavos
+  diaVencimento     Int      @default(10)
+  aluguelAntecipado Boolean  @default(false) // false = paga o mês vencido
+
+  indiceReajuste       IndiceReajuste @default(IGPM)
+  percMulta            Decimal        @default(10) @db.Decimal(7, 4)
+  percJurosMes         Decimal        @default(1) @db.Decimal(7, 4)
+  multaRescisoriaMeses Int            @default(3) // multa = N aluguéis, proporcional ao tempo restante
+
+  garantia    TipoGarantia @default(SEM_GARANTIA)
+  caucaoValor Int? // centavos
+  seguradora  String?
+  apolice     String?
+  garantiaObs String?
+
+  dataEncerramento     DateTime? @db.Date
+  motivoEncerramento   String?
+  valorMultaRescisoria Int? // centavos
+
+  contratoAnteriorId String?   @unique
+  contratoAnterior   Contrato? @relation("Renovacao", fields: [contratoAnteriorId], references: [id])
+  renovacao          Contrato? @relation("Renovacao")
+
+  modeloId    String?
+  modelo      ModeloContrato? @relation(fields: [modeloId], references: [id], onDelete: SetNull)
+  observacoes String?
+  criadoPorId String?
+
+  partes    ContratoParte[]
+  encargos  ContratoEncargo[]
+  reajustes Reajuste[]
+  cobrancas Cobranca[]
+  vistorias Vistoria[]
+  arquivos  Arquivo[]
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@index([status])
+  @@index([imovelId])
+  @@index([dataFim])
+}
+
+// RN-01 (um contrato ATIVO por imóvel) é garantida por um índice único parcial
+// criado manualmente na migration "contrato_ativo_unico".
+
+model ContratoParte {
+  id         String        @id @default(cuid())
+  contratoId String
+  contrato   Contrato      @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  pessoaId   String
+  pessoa     Pessoa        @relation(fields: [pessoaId], references: [id])
+  papel      PapelContrato
+  principal  Boolean       @default(false) // locatário principal (nome no recibo)
+
+  @@unique([contratoId, pessoaId, papel])
+  @@index([pessoaId])
+}
+
+model ContratoEncargo {
+  id         String   @id @default(cuid())
+  contratoId String
+  contrato   Contrato @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  descricao  String // "Condomínio", "IPTU", "Água"
+  valor      Int // centavos/mês
+}
+
+model Reajuste {
+  id                String         @id @default(cuid())
+  contratoId        String
+  contrato          Contrato       @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  dataAplicacao     DateTime       @db.Date
+  competenciaInicio DateTime       @db.Date // primeira competência com o novo valor
+  indice            IndiceReajuste
+  percentual        Decimal        @db.Decimal(7, 4)
+  valorAnterior     Int // centavos
+  valorNovo         Int // centavos
+  observacao        String?
+  criadoEm          DateTime       @default(now())
+}
+
+// ───────────────────────── Financeiro ─────────────────────────
+
+enum TipoCobranca {
+  ALUGUEL
+  MULTA_RESCISORIA
+}
+
+enum StatusCobranca {
+  PENDENTE
+  PAGO_PARCIAL
+  PAGO
+  CANCELADO
+}
+
+// "ATRASADO" não é gravado: é PENDENTE/PAGO_PARCIAL com vencimento (+ próximo dia útil) no passado.
+
+enum FormaPagamento {
+  PIX
+  DINHEIRO
+  TRANSFERENCIA
+  BOLETO
+  CARTAO
+  OUTRO
+}
+
+model Cobranca {
+  id            String         @id @default(cuid())
+  contratoId    String
+  contrato      Contrato       @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  tipo          TipoCobranca   @default(ALUGUEL)
+  competencia   DateTime       @db.Date // sempre dia 1 do mês de referência
+  periodoInicio DateTime       @db.Date
+  periodoFim    DateTime       @db.Date
+  vencimento    DateTime       @db.Date
+  valorAluguel  Int // centavos
+  valorEncargos Int            @default(0) // centavos
+  desconto      Int            @default(0) // centavos
+  valorTotal    Int // centavos = aluguel + encargos − desconto
+  proporcional  Boolean        @default(false)
+  status        StatusCobranca @default(PENDENTE)
+  observacao    String?
+  pagamentos    Pagamento[]
+  criadoEm      DateTime       @default(now())
+  atualizadoEm  DateTime       @updatedAt
+
+  @@unique([contratoId, competencia, tipo])
+  @@index([vencimento, status])
+}
+
+model Pagamento {
+  id             String         @id @default(cuid())
+  cobrancaId     String
+  cobranca       Cobranca       @relation(fields: [cobrancaId], references: [id], onDelete: Cascade)
+  dataPagamento  DateTime       @db.Date
+  valorPrincipal Int // centavos abatidos do saldo da cobrança
+  valorMulta     Int            @default(0)
+  valorJuros     Int            @default(0)
+  valorDesconto  Int            @default(0)
+  valorPago      Int // centavos = principal + multa + juros − desconto (negativo em estorno)
+  forma          FormaPagamento
+  observacao     String?
+  motivoAjuste   String? // obrigatório quando encargos são alterados ou há desconto
+
+  estornoDeId String?    @unique
+  estornoDe   Pagamento? @relation("Estorno", fields: [estornoDeId], references: [id])
+  estorno     Pagamento? @relation("Estorno")
+
+  registradoPorId String?
+  registradoPor   User?     @relation(fields: [registradoPorId], references: [id], onDelete: SetNull)
+  arquivos        Arquivo[]
+  criadoEm        DateTime  @default(now())
+
+  @@index([dataPagamento])
+}
+
+model CategoriaDespesa {
+  id       String    @id @default(cuid())
+  nome     String    @unique
+  ativo    Boolean   @default(true)
+  despesas Despesa[]
+}
+
+model Despesa {
+  id           String           @id @default(cuid())
+  imovelId     String?
+  imovel       Imovel?          @relation(fields: [imovelId], references: [id], onDelete: SetNull)
+  categoriaId  String
+  categoria    CategoriaDespesa @relation(fields: [categoriaId], references: [id])
+  manutencaoId String?
+  manutencao   Manutencao?      @relation(fields: [manutencaoId], references: [id], onDelete: SetNull)
+  data         DateTime         @db.Date
+  valor        Int // centavos
+  fornecedor   String?
+  descricao    String?
+  pago         Boolean          @default(true)
+  arquivos     Arquivo[]
+  criadoPorId  String?
+  criadoEm     DateTime         @default(now())
+  atualizadoEm DateTime         @updatedAt
+
+  @@index([imovelId, data])
+  @@index([data])
+}
+
+// ───────────────────────── Operação ─────────────────────────
+
+enum StatusManutencao {
+  ABERTA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum Prioridade {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+model Manutencao {
+  id          String           @id @default(cuid())
+  imovelId    String
+  imovel      Imovel           @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  titulo      String
+  descricao   String?
+  prioridade  Prioridade       @default(MEDIA)
+  status      StatusManutencao @default(ABERTA)
+  abertaEm    DateTime         @default(now())
+  concluidaEm DateTime?
+  despesas    Despesa[]
+  arquivos    Arquivo[]
+
+  @@index([status])
+}
+
+enum TipoVistoria {
+  ENTRADA
+  SAIDA
+  PERIODICA
+}
+
+model Vistoria {
+  id          String       @id @default(cuid())
+  contratoId  String
+  contrato    Contrato     @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  tipo        TipoVistoria
+  data        DateTime     @db.Date
+  responsavel String?
+  observacoes String?
+  arquivos    Arquivo[]
+  criadoEm    DateTime     @default(now())
+}
+
+// ───────────────────────── Arquivos ─────────────────────────
+
+enum CategoriaArquivo {
+  FOTO
+  DOCUMENTO
+  CONTRATO_ASSINADO
+  COMPROVANTE
+  VISTORIA
+  OUTRO
+}
+
+model Arquivo {
+  id           String           @id @default(cuid())
+  categoria    CategoriaArquivo
+  nomeOriginal String
+  caminho      String // chave no StorageProvider
+  caminhoThumb String?
+  mime         String
+  tamanho      Int
+  largura      Int?
+  altura       Int?
+  legenda      String?
+  ordem        Int              @default(0)
+  capa         Boolean          @default(false)
+
+  imovelId     String?
+  imovel       Imovel?     @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  pessoaId     String?
+  pessoa       Pessoa?     @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+  contratoId   String?
+  contrato     Contrato?   @relation(fields: [contratoId], references: [id], onDelete: Cascade)
+  pagamentoId  String?
+  pagamento    Pagamento?  @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+  despesaId    String?
+  despesa      Despesa?    @relation(fields: [despesaId], references: [id], onDelete: Cascade)
+  manutencaoId String?
+  manutencao   Manutencao? @relation(fields: [manutencaoId], references: [id], onDelete: Cascade)
+  vistoriaId   String?
+  vistoria     Vistoria?   @relation(fields: [vistoriaId], references: [id], onDelete: Cascade)
+
+  enviadoPorId String?
+  criadoEm     DateTime @default(now())
+
+  @@index([imovelId, categoria, ordem])
+  @@index([pessoaId])
+  @@index([contratoId])
+}
+
+// ───────────────────────── Sistema ─────────────────────────
+
+model ModeloContrato {
+  id           String     @id @default(cuid())
+  nome         String
+  finalidade   Finalidade @default(RESIDENCIAL)
+  conteudo     String // texto com marcações simples (#, ##, **) e {{variaveis}}
+  padrao       Boolean    @default(false)
+  ativo        Boolean    @default(true)
+  contratos    Contrato[]
+  criadoEm     DateTime   @default(now())
+  atualizadoEm DateTime   @updatedAt
+}
+
+model Configuracao {
+  chave        String   @id // "locador", "financeiro", "feriados"
+  valor        Json
+  atualizadoEm DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  usuarioId  String?
+  usuario    User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  acao       String // CREATE | UPDATE | DELETE | ...
+  entidade   String // "Imovel", "Contrato"...
+  entidadeId String?
+  dados      Json?
+  criadoEm   DateTime @default(now())
+
+  @@index([entidade, entidadeId])
+  @@index([criadoEm])
+}
