@@ -78,7 +78,12 @@ export function AddressFields<T extends FieldValues>({
         )}
       </FormField>
 
-      <FormField control={control} name={campo("logradouro")} label="Rua / Avenida" className="sm:col-span-4">
+      <FormField
+        control={control}
+        name={campo("logradouro")}
+        label="Rua / Avenida"
+        className="sm:col-span-4"
+      >
         {(field) => <Input {...field} id="logradouro" value={(field.value as string) ?? ""} />}
       </FormField>
 
@@ -94,7 +99,12 @@ export function AddressFields<T extends FieldValues>({
           className="sm:col-span-4"
         >
           {(field) => (
-            <Input {...field} id="complemento" value={(field.value as string) ?? ""} placeholder="Apto 02, fundos..." />
+            <Input
+              {...field}
+              id="complemento"
+              value={(field.value as string) ?? ""}
+              placeholder="Apto 02, fundos..."
+            />
           )}
         </FormField>
       )}

@@ -20,13 +20,7 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({
-  className,
-  showText = true,
-}: {
-  className?: string;
-  showText?: boolean;
-}) {
+export function Logo({ className, showText = true }: { className?: string; showText?: boolean }) {
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
       <LogoMark />

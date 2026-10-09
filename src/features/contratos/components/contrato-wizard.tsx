@@ -21,7 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { gerarCobrancas } from "@/features/contratos/services/cobrancas";
 import { parseISODate, toISODate, today } from "@/lib/dates";
 import { FINALIDADE, INDICE_REAJUSTE, options, TIPO_GARANTIA } from "@/lib/labels";
@@ -47,7 +54,12 @@ export function ContratoWizard({
   imoveis: ComboboxOption[];
   inquilinos: ComboboxOption[];
   fiadores: ComboboxOption[];
-  padroes: { prazoMeses: number; diaVencimento: number; indiceReajuste: ContratoInput["indiceReajuste"]; aluguelAntecipado: boolean };
+  padroes: {
+    prazoMeses: number;
+    diaVencimento: number;
+    indiceReajuste: ContratoInput["indiceReajuste"];
+    aluguelAntecipado: boolean;
+  };
 }) {
   const [etapa, setEtapa] = React.useState(0);
   const form = useForm<ContratoInput>({
@@ -115,7 +127,9 @@ export function ContratoWizard({
             >
               {index + 1}
             </span>
-            <span className={index === etapa ? "font-medium" : "text-muted-foreground"}>{nome}</span>
+            <span className={index === etapa ? "font-medium" : "text-muted-foreground"}>
+              {nome}
+            </span>
             {index < ETAPAS.length - 1 && <span className="mx-1 h-px w-6 bg-border" />}
           </li>
         ))}
@@ -157,7 +171,12 @@ export function ContratoWizard({
 
           {etapa === 1 && (
             <FieldGroup className="grid gap-5 sm:grid-cols-2">
-              <FormField control={form.control} name="locatarioId" label="Locatário" className="sm:col-span-2">
+              <FormField
+                control={form.control}
+                name="locatarioId"
+                label="Locatário"
+                className="sm:col-span-2"
+              >
                 {(field) => (
                   <Combobox
                     value={field.value}
@@ -228,10 +247,19 @@ export function ContratoWizard({
                   {(field) => <Input {...field} type="date" />}
                 </FormField>
                 <FormField control={form.control} name="prazoMeses" label="Prazo (meses)">
-                  {(field) => <NumberInput {...field} min={1} onChange={(v) => field.onChange(v ?? 30)} />}
+                  {(field) => (
+                    <NumberInput {...field} min={1} onChange={(v) => field.onChange(v ?? 30)} />
+                  )}
                 </FormField>
                 <FormField control={form.control} name="diaVencimento" label="Dia de vencimento">
-                  {(field) => <NumberInput {...field} min={1} max={31} onChange={(v) => field.onChange(v ?? 10)} />}
+                  {(field) => (
+                    <NumberInput
+                      {...field}
+                      min={1}
+                      max={31}
+                      onChange={(v) => field.onChange(v ?? 10)}
+                    />
+                  )}
                 </FormField>
                 <FormField control={form.control} name="valorAluguel" label="Valor do aluguel">
                   {(field) => <MoneyInput {...field} onChange={(v) => field.onChange(v ?? 0)} />}
@@ -255,7 +283,10 @@ export function ContratoWizard({
                 <FormField control={form.control} name="aluguelAntecipado" className="self-end">
                   {(field) => (
                     <label className="flex items-center gap-2 text-sm">
-                      <Checkbox checked={field.value} onCheckedChange={(c) => field.onChange(c === true)} />
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(c) => field.onChange(c === true)}
+                      />
                       Aluguel antecipado
                     </label>
                   )}
@@ -276,7 +307,12 @@ export function ContratoWizard({
                       onChange={(v) => form.setValue(`encargos.${index}.valor`, v ?? 0)}
                       className="w-40"
                     />
-                    <Button type="button" variant="ghost" size="icon-sm" onClick={() => remove(index)}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => remove(index)}
+                    >
                       <XIcon />
                     </Button>
                   </div>
@@ -310,7 +346,9 @@ export function ContratoWizard({
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Garantia</p>
-                  <p className="text-sm font-medium">{TIPO_GARANTIA[valores.garantia ?? "SEM_GARANTIA"]}</p>
+                  <p className="text-sm font-medium">
+                    {TIPO_GARANTIA[valores.garantia ?? "SEM_GARANTIA"]}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Valor do aluguel</p>
@@ -321,7 +359,8 @@ export function ContratoWizard({
               {preview && (
                 <div>
                   <p className="mb-2 text-sm font-medium">
-                    Prévia das cobranças ({preview.length} parcelas, total {formatBRL(sum(preview.map((c) => c.valorTotal)))})
+                    Prévia das cobranças ({preview.length} parcelas, total{" "}
+                    {formatBRL(sum(preview.map((c) => c.valorTotal)))})
                   </p>
                   <div className="max-h-72 overflow-y-auto rounded-lg border">
                     <Table>
@@ -360,7 +399,12 @@ export function ContratoWizard({
       </Card>
 
       <div className="flex justify-between">
-        <Button type="button" variant="outline" disabled={etapa === 0} onClick={() => setEtapa((e) => e - 1)}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={etapa === 0}
+          onClick={() => setEtapa((e) => e - 1)}
+        >
           <ArrowLeftIcon /> Voltar
         </Button>
         {etapa < ETAPAS.length - 1 ? (

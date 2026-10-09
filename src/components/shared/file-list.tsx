@@ -15,7 +15,13 @@ export type ArquivoItem = {
   criadoEm: Date;
 };
 
-export function FileList({ arquivos, vazio = "Nenhum arquivo enviado." }: { arquivos: ArquivoItem[]; vazio?: string }) {
+export function FileList({
+  arquivos,
+  vazio = "Nenhum arquivo enviado.",
+}: {
+  arquivos: ArquivoItem[];
+  vazio?: string;
+}) {
   if (arquivos.length === 0) {
     return <p className="py-6 text-center text-sm text-muted-foreground">{vazio}</p>;
   }

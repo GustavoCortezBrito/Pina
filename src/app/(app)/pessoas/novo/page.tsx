@@ -7,7 +7,10 @@ export const metadata: Metadata = { title: "Nova pessoa" };
 export default function NovaPessoaPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title="Nova pessoa" description="Cadastre um inquilino, fiador ou proprietário." />
+      <PageHeader
+        title="Nova pessoa"
+        description="Cadastre um inquilino, fiador ou proprietário."
+      />
       <PessoaForm />
     </div>
   );

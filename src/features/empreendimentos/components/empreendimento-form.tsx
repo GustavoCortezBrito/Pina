@@ -33,7 +33,10 @@ export function EmpreendimentoForm({
 
   async function onSubmit(dados: EmpreendimentoInput) {
     const result = await run(
-      () => (empreendimentoId ? atualizarEmpreendimento(empreendimentoId, dados) : criarEmpreendimento(dados)),
+      () =>
+        empreendimentoId
+          ? atualizarEmpreendimento(empreendimentoId, dados)
+          : criarEmpreendimento(dados),
       { onSuccess: ({ id }) => router.push(`/empreendimentos/${id}`) },
     );
     if (!result.ok) applyServerErrors(form, result);
@@ -62,7 +65,9 @@ export function EmpreendimentoForm({
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" asChild>
-          <Link href={empreendimentoId ? `/empreendimentos/${empreendimentoId}` : "/empreendimentos"}>
+          <Link
+            href={empreendimentoId ? `/empreendimentos/${empreendimentoId}` : "/empreendimentos"}
+          >
             Cancelar
           </Link>
         </Button>

@@ -7,7 +7,13 @@ import { Pagination } from "@/components/shared/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { PapelPessoa } from "@/generated/prisma/enums";
 import { listarPessoas } from "@/features/pessoas/queries";
 import { formatDocumento, formatPhone, initials, whatsappLink } from "@/lib/format";
@@ -59,22 +65,22 @@ export default async function PessoasPage(props: PageProps<"/pessoas">) {
         </Empty>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {itens.map((pessoa, index) => {
               const link = whatsappLink(pessoa.telefone1);
               return (
                 <Card
                   key={pessoa.id}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className="animate-in transition-all duration-500 fill-mode-both fade-in slide-in-from-bottom-2 hover:-translate-y-0.5 hover:shadow-md"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
-                  <CardContent className="flex flex-wrap items-center gap-4 p-5 sm:flex-nowrap sm:p-6">
+                  <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
                     <Link href={`/pessoas/${pessoa.id}`} className="contents">
-                      <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/15 text-base font-semibold text-primary">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-base font-semibold text-primary">
                         {initials(pessoa.nome)}
                       </span>
                       <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="truncate text-lg font-semibold">{pessoa.nome}</p>
+                        <p className="truncate text-base font-semibold">{pessoa.nome}</p>
                         <p className="text-sm text-muted-foreground">
                           {TIPO_PESSOA[pessoa.tipo]} · {formatDocumento(pessoa.documento)}
                         </p>
@@ -90,7 +96,9 @@ export default async function PessoasPage(props: PageProps<"/pessoas">) {
 
                     {pessoa.telefone1 && (
                       <div className="w-full shrink-0 text-right sm:w-auto">
-                        <p className="text-sm font-medium whitespace-nowrap">{formatPhone(pessoa.telefone1)}</p>
+                        <p className="text-sm font-medium whitespace-nowrap">
+                          {formatPhone(pessoa.telefone1)}
+                        </p>
                         {pessoa.telefone1Whats && link && (
                           <Button
                             variant="outline"

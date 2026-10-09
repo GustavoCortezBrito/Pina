@@ -5,7 +5,13 @@ import { FilterBar, FilterSelect, SearchInput } from "@/components/shared/filter
 import { Pagination } from "@/components/shared/pagination";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { StatusImovel, TipoImovel } from "@/generated/prisma/enums";
 import { opcoesEmpreendimentos } from "@/features/empreendimentos/queries";
 import { ImovelCard } from "@/features/imoveis/components/imovel-card";
@@ -14,7 +20,10 @@ import { options, STATUS_IMOVEL, TIPO_IMOVEL } from "@/lib/labels";
 
 export const metadata: Metadata = { title: "Imóveis" };
 
-function enumOuIndefinido<T extends string>(valores: readonly T[], valor: string | undefined): T | undefined {
+function enumOuIndefinido<T extends string>(
+  valores: readonly T[],
+  valor: string | undefined,
+): T | undefined {
   return valores.includes(valor as T) ? (valor as T) : undefined;
 }
 
@@ -55,10 +64,16 @@ export default async function ImoveisPage(props: PageProps<"/imoveis">) {
         <FilterSelect
           param="status"
           placeholder="Situação"
-          options={options(Object.fromEntries(Object.entries(STATUS_IMOVEL).map(([k, v]) => [k, v.label])))}
+          options={options(
+            Object.fromEntries(Object.entries(STATUS_IMOVEL).map(([k, v]) => [k, v.label])),
+          )}
         />
         {empreendimentos.length > 0 && (
-          <FilterSelect param="empreendimento" placeholder="Empreendimento" options={empreendimentos} />
+          <FilterSelect
+            param="empreendimento"
+            placeholder="Empreendimento"
+            options={empreendimentos}
+          />
         )}
       </FilterBar>
 

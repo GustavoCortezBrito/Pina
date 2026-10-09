@@ -55,7 +55,9 @@ export function UserMenu({ nome, email, perfil }: { nome: string; email: string;
           <UserIcon /> Meu perfil e senha
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Tema</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+          Tema
+        </DropdownMenuLabel>
         <DropdownMenuRadioGroup value={montado ? theme : undefined} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light">
             <SunIcon /> Claro

@@ -45,7 +45,9 @@ function paraBanco(dados: PessoaInput) {
 }
 
 async function garantirDocumentoLivre(documento: string, ignorarId?: string) {
-  const existente = await db.pessoa.findUnique({ where: { documento: normalizeDocumento(documento) } });
+  const existente = await db.pessoa.findUnique({
+    where: { documento: normalizeDocumento(documento) },
+  });
   if (existente && existente.id !== ignorarId) {
     throw new AppError("Já existe uma pessoa cadastrada com esse CPF/CNPJ.");
   }
@@ -59,7 +61,12 @@ export async function criarPessoa(input: unknown) {
       await garantirDocumentoLivre(dados.documento);
 
       const pessoa = await db.pessoa.create({ data: paraBanco(dados) });
-      await audit({ usuarioId: user.id, acao: "CREATE", entidade: "Pessoa", entidadeId: pessoa.id });
+      await audit({
+        usuarioId: user.id,
+        acao: "CREATE",
+        entidade: "Pessoa",
+        entidadeId: pessoa.id,
+      });
       return { id: pessoa.id };
     },
     { message: "Pessoa cadastrada." },

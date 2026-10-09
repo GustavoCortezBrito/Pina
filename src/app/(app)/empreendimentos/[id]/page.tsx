@@ -8,7 +8,13 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { excluirEmpreendimento } from "@/features/empreendimentos/actions";
 import { obterEmpreendimento } from "@/features/empreendimentos/queries";
 import { formatEndereco } from "@/lib/format";
@@ -83,7 +89,7 @@ export default async function EmpreendimentoDetalhePage(props: PageProps<"/empre
               <Link
                 key={imovel.id}
                 href={`/imoveis/${imovel.id}`}
-                className="animate-in fade-in slide-in-from-bottom-2 block rounded-xl duration-500 fill-mode-both"
+                className="block animate-in rounded-xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
                 <Card className="group h-full gap-0 overflow-hidden p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -93,14 +99,20 @@ export default async function EmpreendimentoDetalhePage(props: PageProps<"/empre
                       alt={imovel.titulo}
                       className="size-full transition-transform duration-300 group-hover:scale-105"
                     />
-                    <StatusBadge label={status.label} tone={status.tone} className="absolute top-2 right-2" />
+                    <StatusBadge
+                      label={status.label}
+                      tone={status.tone}
+                      className="absolute top-2 right-2"
+                    />
                   </div>
                   <div className="space-y-1 p-3">
                     <p className="truncate text-sm font-semibold">{imovel.titulo}</p>
                     <p className="text-xs text-muted-foreground">
                       {imovel.codigo} · {TIPO_IMOVEL[imovel.tipo]}
                     </p>
-                    {locatario && <p className="truncate text-xs text-muted-foreground">{locatario}</p>}
+                    {locatario && (
+                      <p className="truncate text-xs text-muted-foreground">{locatario}</p>
+                    )}
                   </div>
                 </Card>
               </Link>

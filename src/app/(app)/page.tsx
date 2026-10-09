@@ -1,4 +1,10 @@
-import { AlertTriangleIcon, CalendarClockIcon, HandCoinsIcon, HouseIcon, TrendingUpIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  CalendarClockIcon,
+  HandCoinsIcon,
+  HouseIcon,
+  TrendingUpIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -32,7 +38,12 @@ export default async function DashboardPage() {
       <PageHeader title={`Olá, ${primeiroNome}`} description={hoje} />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Unidades" value={r.totalUnidades} icon={HouseIcon} style={{ animationDelay: "0ms" }} />
+        <StatCard
+          label="Unidades"
+          value={r.totalUnidades}
+          icon={HouseIcon}
+          style={{ animationDelay: "0ms" }}
+        />
         <StatCard
           label="Ocupadas"
           value={r.ocupadas}
@@ -41,7 +52,12 @@ export default async function DashboardPage() {
           icon={HouseIcon}
           style={{ animationDelay: "40ms" }}
         />
-        <StatCard label="Vagas" value={r.vagas} icon={HouseIcon} style={{ animationDelay: "80ms" }} />
+        <StatCard
+          label="Vagas"
+          value={r.vagas}
+          icon={HouseIcon}
+          style={{ animationDelay: "80ms" }}
+        />
         <StatCard
           label="Recebido no mês"
           value={formatBRL(r.recebidoMes)}
@@ -66,7 +82,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both [animation-delay:240ms]">
+        <Card className="animate-in duration-500 fill-mode-both [animation-delay:240ms] fade-in slide-in-from-bottom-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertTriangleIcon className="size-4 text-red-600 dark:text-red-400" />
@@ -91,7 +107,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both [animation-delay:280ms]">
+        <Card className="animate-in duration-500 fill-mode-both [animation-delay:280ms] fade-in slide-in-from-bottom-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <CalendarClockIcon className="size-4 text-amber-600 dark:text-amber-400" />
@@ -116,7 +132,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both [animation-delay:320ms]">
+        <Card className="animate-in duration-500 fill-mode-both [animation-delay:320ms] fade-in slide-in-from-bottom-2">
           <CardHeader>
             <CardTitle className="text-base">Contratos vencendo (60 dias)</CardTitle>
           </CardHeader>
@@ -135,7 +151,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both [animation-delay:360ms]">
+        <Card className="animate-in duration-500 fill-mode-both [animation-delay:360ms] fade-in slide-in-from-bottom-2">
           <CardHeader>
             <CardTitle className="text-base">Reajustes nos próximos 30 dias</CardTitle>
           </CardHeader>
@@ -157,7 +173,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both [animation-delay:400ms]">
+      <Card className="animate-in duration-500 fill-mode-both [animation-delay:400ms] fade-in slide-in-from-bottom-2">
         <CardHeader>
           <CardTitle className="text-base">Receita × despesa — últimos 12 meses</CardTitle>
         </CardHeader>

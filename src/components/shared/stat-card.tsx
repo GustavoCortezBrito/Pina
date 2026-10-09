@@ -3,18 +3,21 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const TONE_STYLES = {
-  default: { value: "text-foreground", icon: "bg-muted text-muted-foreground" },
+  default: { value: "text-foreground", icon: "bg-primary/15 text-primary", bar: "bg-primary" },
   positive: {
     value: "text-emerald-600 dark:text-emerald-400",
     icon: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    bar: "bg-emerald-500",
   },
   negative: {
     value: "text-red-600 dark:text-red-400",
     icon: "bg-red-500/15 text-red-600 dark:text-red-400",
+    bar: "bg-red-500",
   },
   warning: {
     value: "text-amber-600 dark:text-amber-400",
     icon: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    bar: "bg-amber-500",
   },
 } as const;
 
@@ -40,18 +43,21 @@ export function StatCard({
   const content = (
     <Card
       style={style}
-      className="animate-in fade-in slide-in-from-bottom-2 h-full gap-2 p-4 transition-all duration-200 fill-mode-both hover:-translate-y-0.5 hover:shadow-md"
+      className="relative h-full animate-in gap-1.5 p-4 pl-5 transition-all duration-200 fill-mode-both fade-in slide-in-from-bottom-2 hover:-translate-y-0.5 hover:shadow-md"
     >
+      <span className={cn("absolute inset-y-0 left-0 w-1.5", palette.bar)} aria-hidden />
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
         {Icon && (
-          <span className={cn("flex size-8 items-center justify-center rounded-full", palette.icon)}>
-            <Icon className="size-4" />
+          <span
+            className={cn("flex size-9 items-center justify-center rounded-full", palette.icon)}
+          >
+            <Icon className="size-5" />
           </span>
         )}
       </div>
-      <div className={cn("text-2xl font-semibold tabular-nums", palette.value)}>{value}</div>
-      {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
+      <div className={cn("text-2xl font-bold tabular-nums", palette.value)}>{value}</div>
+      {hint && <div className="text-sm text-muted-foreground">{hint}</div>}
     </Card>
   );
 

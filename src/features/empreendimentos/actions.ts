@@ -46,7 +46,12 @@ export async function atualizarEmpreendimento(id: string, input: unknown) {
       const user = await requireUser();
       const dados = empreendimentoSchema.parse(input);
       await db.empreendimento.update({ where: { id }, data: paraBanco(dados) });
-      await audit({ usuarioId: user.id, acao: "UPDATE", entidade: "Empreendimento", entidadeId: id });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE",
+        entidade: "Empreendimento",
+        entidadeId: id,
+      });
       return { id };
     },
     { message: "Empreendimento atualizado." },
@@ -61,11 +66,18 @@ export async function excluirEmpreendimento(id: string) {
 
       const unidades = await db.imovel.count({ where: { empreendimentoId, deletadoEm: null } });
       if (unidades > 0) {
-        throw new AppError("Este empreendimento tem imóveis vinculados. Remova ou mova as unidades antes.");
+        throw new AppError(
+          "Este empreendimento tem imóveis vinculados. Remova ou mova as unidades antes.",
+        );
       }
 
       await db.empreendimento.delete({ where: { id: empreendimentoId } });
-      await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Empreendimento", entidadeId: empreendimentoId });
+      await audit({
+        usuarioId: user.id,
+        acao: "DELETE",
+        entidade: "Empreendimento",
+        entidadeId: empreendimentoId,
+      });
     },
     { message: "Empreendimento excluído." },
   );

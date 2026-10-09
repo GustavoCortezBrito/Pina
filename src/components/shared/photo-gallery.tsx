@@ -20,7 +20,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
   atualizarLegenda,
@@ -205,7 +211,9 @@ export function PhotoGallery({ fotos }: { fotos: Foto[] }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Legenda da foto</DialogTitle>
-            <DialogDescription>Ajuda a identificar o cômodo (ex.: &quot;Cozinha&quot;).</DialogDescription>
+            <DialogDescription>
+              Ajuda a identificar o cômodo (ex.: &quot;Cozinha&quot;).
+            </DialogDescription>
           </DialogHeader>
           <Input
             value={legenda}
@@ -245,7 +253,9 @@ export function FotoCapa({
 }) {
   if (!arquivoId) {
     return (
-      <div className={cn("flex items-center justify-center bg-muted text-muted-foreground", className)}>
+      <div
+        className={cn("flex items-center justify-center bg-muted text-muted-foreground", className)}
+      >
         <ImageIcon className="size-6" />
       </div>
     );

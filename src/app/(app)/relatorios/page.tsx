@@ -2,7 +2,13 @@ import { ChartColumnIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
 import { RECEITA_DESPESA_MOCK } from "@/features/dashboard/mock";
 import { formatBRL } from "@/lib/money";
@@ -35,12 +41,15 @@ export default function RelatoriosPage() {
         </CardHeader>
         <CardContent className="space-y-1 p-0">
           {RESULTADO_POR_IMOVEL_MOCK.map((item) => (
-            <div key={item.imovel} className="flex items-center justify-between gap-2 border-t px-6 py-3 text-sm first:border-t-0">
+            <div
+              key={item.imovel}
+              className="flex items-center justify-between gap-2 border-t px-6 py-3 text-sm first:border-t-0"
+            >
               <span className="font-medium">{item.imovel}</span>
-              <span className="tabular-nums text-muted-foreground">
+              <span className="text-muted-foreground tabular-nums">
                 {formatBRL(item.receita)} receita · {formatBRL(item.despesa)} despesa
               </span>
-              <span className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+              <span className="font-semibold text-emerald-600 tabular-nums dark:text-emerald-400">
                 {formatBRL(item.receita - item.despesa)}
               </span>
             </div>
