@@ -21,7 +21,7 @@ export function ManutencaoStatusSelect({ id, status }: { id: string; status: Sta
       disabled={pending}
       onValueChange={(novo) => run(() => alterarStatusManutencao({ id, status: novo }))}
     >
-      <SelectTrigger size="sm" className="w-auto">
+      <SelectTrigger size="sm" className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

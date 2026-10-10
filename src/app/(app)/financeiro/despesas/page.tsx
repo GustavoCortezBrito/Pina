@@ -65,63 +65,64 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
         </Empty>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {itens.map((despesa, index) => (
               <Card
                 key={despesa.id}
-                className="animate-in duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
+                className="animate-in fade-in slide-in-from-bottom-2 h-full duration-500 fill-mode-both"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
-                <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <WalletIcon className="size-6" />
-                  </span>
+                <CardContent className="flex h-full flex-col gap-3 p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <WalletIcon className="size-5" />
+                    </span>
+                    <div className="flex shrink-0 gap-1">
+                      <DespesaDialog
+                        imoveis={imoveis}
+                        categorias={categoriasOptions}
+                        despesa={{
+                          id: despesa.id,
+                          imovelId: despesa.imovelId,
+                          categoriaId: despesa.categoriaId,
+                          data: formatDate(despesa.data).split("/").reverse().join("-"),
+                          valor: despesa.valor,
+                          fornecedor: despesa.fornecedor ?? "",
+                          descricao: despesa.descricao ?? "",
+                          pago: despesa.pago,
+                        }}
+                        trigger={
+                          <Button variant="ghost" size="icon" aria-label="Editar despesa">
+                            <PencilIcon />
+                          </Button>
+                        }
+                      />
+                      <ConfirmAction
+                        trigger={
+                          <Button variant="ghost" size="icon" aria-label="Excluir despesa">
+                            <Trash2Icon />
+                          </Button>
+                        }
+                        titulo="Excluir despesa?"
+                        descricao="Esta ação não pode ser desfeita."
+                        confirmLabel="Excluir"
+                        action={excluirDespesa.bind(null, despesa.id)}
+                      />
+                    </div>
+                  </div>
 
-                  <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <p className="truncate text-base font-semibold">{despesa.categoria.nome}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="truncate text-sm text-muted-foreground">
                       {formatDate(despesa.data)}
                       {despesa.imovel && ` · ${despesa.imovel.codigo}`}
-                      {despesa.fornecedor && ` · ${despesa.fornecedor}`}
                     </p>
+                    {despesa.fornecedor && (
+                      <p className="truncate text-xs text-muted-foreground">{despesa.fornecedor}</p>
+                    )}
                   </div>
 
-                  <p className="shrink-0 text-lg font-bold tabular-nums">
-                    {formatBRL(despesa.valor)}
-                  </p>
-
-                  <div className="flex shrink-0 gap-1">
-                    <DespesaDialog
-                      imoveis={imoveis}
-                      categorias={categoriasOptions}
-                      despesa={{
-                        id: despesa.id,
-                        imovelId: despesa.imovelId,
-                        categoriaId: despesa.categoriaId,
-                        data: formatDate(despesa.data).split("/").reverse().join("-"),
-                        valor: despesa.valor,
-                        fornecedor: despesa.fornecedor ?? "",
-                        descricao: despesa.descricao ?? "",
-                        pago: despesa.pago,
-                      }}
-                      trigger={
-                        <Button variant="outline" size="icon" aria-label="Editar despesa">
-                          <PencilIcon />
-                        </Button>
-                      }
-                    />
-                    <ConfirmAction
-                      trigger={
-                        <Button variant="outline" size="icon" aria-label="Excluir despesa">
-                          <Trash2Icon />
-                        </Button>
-                      }
-                      titulo="Excluir despesa?"
-                      descricao="Esta ação não pode ser desfeita."
-                      confirmLabel="Excluir"
-                      action={excluirDespesa.bind(null, despesa.id)}
-                    />
-                  </div>
+                  <p className="border-t pt-3 text-lg font-bold tabular-nums">{formatBRL(despesa.valor)}</p>
                 </CardContent>
               </Card>
             ))}

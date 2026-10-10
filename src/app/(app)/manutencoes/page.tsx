@@ -54,7 +54,7 @@ export default async function ManutencoesPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {manutencoes.map((item, index) => {
             const status = STATUS_MANUTENCAO[item.status];
             const prioridade = PRIORIDADE[item.prioridade];
@@ -62,31 +62,39 @@ export default async function ManutencoesPage() {
               <Card
                 key={item.id}
                 className={cn(
-                  "animate-in fade-in slide-in-from-bottom-2 border-l-4 duration-500 fill-mode-both transition-all hover:-translate-y-0.5 hover:shadow-md",
+                  "animate-in fade-in slide-in-from-bottom-2 h-full border-l-4 duration-500 fill-mode-both transition-all hover:-translate-y-0.5 hover:shadow-md",
                   TONE_BORDER[prioridade.tone],
                 )}
                 style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
               >
-                <CardContent className="flex items-start gap-4 p-5 sm:p-6">
-                  <span
-                    className={cn(
-                      "flex size-12 shrink-0 items-center justify-center rounded-full",
-                      TONE_ICON_BG[status.tone],
-                    )}
-                  >
-                    <WrenchIcon className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1 space-y-2">
-                    <p className="text-lg font-semibold">{item.titulo}</p>
-                    <p className="text-sm text-muted-foreground">
+                <CardContent className="flex h-full flex-col gap-3 p-5">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={cn(
+                        "flex size-11 shrink-0 items-center justify-center rounded-full",
+                        TONE_ICON_BG[status.tone],
+                      )}
+                    >
+                      <WrenchIcon className="size-5" />
+                    </span>
+                    <StatusBadge label={prioridade.label} tone={prioridade.tone} />
+                  </div>
+
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-base font-semibold">{item.titulo}</p>
+                    <p className="truncate text-sm text-muted-foreground">
                       {item.imovel.codigo} · aberta em {formatDate(item.abertaEm)}
-                      {item.concluidaEm && ` · concluída em ${formatDate(item.concluidaEm)}`}
                     </p>
-                    {item.descricao && <p className="text-sm text-muted-foreground">{item.descricao}</p>}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <ManutencaoStatusSelect id={item.id} status={item.status} />
-                      <StatusBadge label={prioridade.label} tone={prioridade.tone} />
-                    </div>
+                    {item.concluidaEm && (
+                      <p className="text-xs text-muted-foreground">concluída em {formatDate(item.concluidaEm)}</p>
+                    )}
+                    {item.descricao && (
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{item.descricao}</p>
+                    )}
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <ManutencaoStatusSelect id={item.id} status={item.status} />
                   </div>
                 </CardContent>
               </Card>

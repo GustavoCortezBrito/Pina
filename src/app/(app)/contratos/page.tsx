@@ -1,4 +1,4 @@
-import { ChevronRightIcon, FileSignatureIcon, PlusIcon, UserIcon } from "lucide-react";
+import { FileSignatureIcon, PlusIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { FilterBar, FilterSelect, SearchInput } from "@/components/shared/filters";
@@ -65,9 +65,7 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
         <FilterSelect
           param="status"
           placeholder="Status"
-          options={options(
-            Object.fromEntries(Object.entries(STATUS_CONTRATO).map(([k, v]) => [k, v.label])),
-          )}
+          options={options(Object.fromEntries(Object.entries(STATUS_CONTRATO).map(([k, v]) => [k, v.label])))}
         />
       </FilterBar>
 
@@ -83,73 +81,61 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
         </Empty>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {itens.map((contrato, index) => {
               const status = STATUS_CONTRATO[contrato.status];
               const locatario = contrato.partes.find((p) => p.papel === "LOCATARIO");
-              const outrasPartes = contrato.partes.filter((p) => p !== locatario);
+              const fiador = contrato.partes.find((p) => p.papel === "FIADOR");
               return (
                 <Link
                   key={contrato.id}
                   href={`/contratos/${contrato.id}`}
-                  className="block animate-in rounded-2xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
+                  className="animate-in fade-in slide-in-from-bottom-2 block rounded-xl duration-500 fill-mode-both"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
-                  <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-                    <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
-                      <span
-                        className={cn(
-                          "flex size-11 shrink-0 items-center justify-center rounded-full",
-                          TONE_ICON_BG[status.tone],
-                        )}
-                      >
-                        <FileSignatureIcon className="size-5" />
-                      </span>
+                  <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                    <CardContent className="flex h-full flex-col gap-3 p-5">
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={cn(
+                            "flex size-11 shrink-0 items-center justify-center rounded-full",
+                            TONE_ICON_BG[status.tone],
+                          )}
+                        >
+                          <FileSignatureIcon className="size-5" />
+                        </span>
+                        <StatusBadge label={status.label} tone={status.tone} />
+                      </div>
 
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-base font-semibold">
-                            {contrato.imovel.titulo}
-                          </p>
-                          <StatusBadge
-                            label={status.label}
-                            tone={status.tone}
-                            className="text-xs"
-                          />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Contrato nº {formatNumeroContrato(contrato.numero)} ·{" "}
-                          {contrato.imovel.codigo}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="truncate text-base font-semibold">{contrato.imovel.titulo}</p>
+                        <p className="text-xs text-muted-foreground">
+                          nº {formatNumeroContrato(contrato.numero)} · {contrato.imovel.codigo}
                         </p>
                         {locatario && (
-                          <p className="flex items-center gap-1.5 text-sm">
-                            <UserIcon className="size-4 text-muted-foreground" />
-                            <span className="font-medium">{locatario.pessoa.nome}</span>
-                            {outrasPartes.length > 0 && (
-                              <span className="text-muted-foreground">
-                                ·{" "}
-                                {outrasPartes
-                                  .map((p) => `${PAPEL_CONTRATO[p.papel]}: ${p.pessoa.nome}`)
-                                  .join(", ")}
-                              </span>
-                            )}
+                          <p className="flex items-center gap-1.5 truncate text-sm">
+                            <UserIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                            <span className="truncate font-medium">{locatario.pessoa.nome}</span>
+                          </p>
+                        )}
+                        {fiador && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {PAPEL_CONTRATO.FIADOR}: {fiador.pessoa.nome}
                           </p>
                         )}
                       </div>
 
-                      <div className="shrink-0 text-right">
-                        <p className="text-lg font-bold tabular-nums">
-                          {formatBRL(contrato.valorAluguel)}
+                      <div className="flex items-end justify-between border-t pt-3">
+                        <div>
+                          <p className="text-lg font-bold tabular-nums">{formatBRL(contrato.valorAluguel)}</p>
+                          <p className="text-xs text-muted-foreground">por mês</p>
+                        </div>
+                        <p className="text-right text-xs text-muted-foreground">
+                          até
+                          <br />
+                          {formatDate(contrato.dataFim)}
                         </p>
-                        <p className="text-sm text-muted-foreground">por mês</p>
                       </div>
-
-                      <div className="hidden shrink-0 border-l pl-4 text-right text-sm text-muted-foreground 2xl:block">
-                        <p>Início {formatDate(contrato.dataInicio)}</p>
-                        <p>Fim {formatDate(contrato.dataFim)}</p>
-                      </div>
-
-                      <ChevronRightIcon className="hidden size-5 shrink-0 text-muted-foreground sm:block" />
                     </CardContent>
                   </Card>
                 </Link>
