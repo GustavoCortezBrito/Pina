@@ -2,12 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon, SendIcon, XIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
-import { toast } from "sonner";
+import { applyServerErrors, FormField } from "@/components/shared/form-field";
 import { Combobox, type ComboboxOption } from "@/components/shared/combobox";
-import { FormField } from "@/components/shared/form-field";
 import { MoneyInput, NumberInput } from "@/components/shared/inputs";
+import { useAction } from "@/components/shared/use-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { criarContrato } from "@/features/contratos/actions";
 import { gerarCobrancas } from "@/features/contratos/services/cobrancas";
 import { parseISODate, toISODate, today } from "@/lib/dates";
 import { FINALIDADE, INDICE_REAJUSTE, options, TIPO_GARANTIA } from "@/lib/labels";
@@ -49,6 +52,8 @@ export function ContratoWizard({
   fiadores: ComboboxOption[];
   padroes: { prazoMeses: number; diaVencimento: number; indiceReajuste: ContratoInput["indiceReajuste"]; aluguelAntecipado: boolean };
 }) {
+  const router = useRouter();
+  const { pending, run } = useAction();
   const [etapa, setEtapa] = React.useState(0);
   const form = useForm<ContratoInput>({
     resolver: zodResolver(contratoSchema),
@@ -94,8 +99,12 @@ export function ContratoWizard({
     if (valido) setEtapa((e) => Math.min(ETAPAS.length - 1, e + 1));
   }
 
-  function finalizar() {
-    toast.info("Em breve: este passo vai gravar o contrato e gerar as cobranças no banco.");
+  async function finalizar() {
+    const dados = form.getValues();
+    const result = await run(() => criarContrato(dados), {
+      onSuccess: ({ id }) => router.push(`/contratos/${id}`),
+    });
+    if (!result.ok) applyServerErrors(form, result);
   }
 
   return (
@@ -368,8 +377,9 @@ export function ContratoWizard({
             Próximo <ArrowRightIcon />
           </Button>
         ) : (
-          <Button type="button" onClick={finalizar}>
-            <SendIcon /> Criar contrato
+          <Button type="button" size="lg" disabled={pending} onClick={finalizar}>
+            {pending ? <Spinner /> : <SendIcon />}
+            Criar contrato
           </Button>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { FileTextIcon, RefreshCwIcon, XCircleIcon } from "lucide-react";
+import { FileTextIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FileList } from "@/components/shared/file-list";
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog";
+import { ReajusteDialog } from "@/features/contratos/components/reajuste-dialog";
 import { obterContrato } from "@/features/contratos/queries";
 import { statusEfetivo } from "@/features/financeiro/services/encargos";
 import { formatDate } from "@/lib/dates";
@@ -46,19 +48,32 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
         }
         description={`${contrato.imovel.titulo} (${contrato.imovel.codigo}) · ${FINALIDADE[contrato.finalidade]}`}
         actions={
-          contrato.status === "ATIVO" && (
-            <>
-              <Button variant="outline" disabled title="Em breve">
-                <RefreshCwIcon /> Aplicar reajuste
-              </Button>
-              <Button variant="outline" disabled title="Em breve">
-                <XCircleIcon /> Encerrar / rescindir
-              </Button>
-              <Button variant="outline" disabled title="Em breve">
+          <>
+            {contrato.status === "ATIVO" && (
+              <>
+                <ReajusteDialog
+                  contratoId={contrato.id}
+                  valorAtual={contrato.valorAluguel}
+                  indiceReajuste={contrato.indiceReajuste}
+                  dataInicio={contrato.dataInicio}
+                  dataFim={contrato.dataFim}
+                  reajustesAplicados={contrato.reajustes.length}
+                />
+                <EncerrarDialog
+                  contratoId={contrato.id}
+                  valorAluguel={contrato.valorAluguel}
+                  multaRescisoriaMeses={contrato.multaRescisoriaMeses}
+                  dataInicio={contrato.dataInicio}
+                  dataFim={contrato.dataFim}
+                />
+              </>
+            )}
+            <Button variant="outline" asChild>
+              <a href={`/api/pdf/contrato/${contrato.id}`} target="_blank" rel="noreferrer">
                 <FileTextIcon /> Gerar PDF
-              </Button>
-            </>
-          )
+              </a>
+            </Button>
+          </>
         }
       />
 
@@ -109,11 +124,13 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   <TableHead>Vencimento</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {contrato.cobrancas.map((cobranca) => {
-                  const efetivo = STATUS_COBRANCA[statusEfetivo(cobranca.status, cobranca.vencimento, hoje)];
+                  const status = statusEfetivo(cobranca.status, cobranca.vencimento, hoje);
+                  const efetivo = STATUS_COBRANCA[status];
                   return (
                     <TableRow key={cobranca.id}>
                       <TableCell className="capitalize">{formatDate(cobranca.competencia)}</TableCell>
@@ -121,6 +138,15 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                       <TableCell className="text-right tabular-nums">{formatBRL(cobranca.valorTotal)}</TableCell>
                       <TableCell>
                         <StatusBadge label={efetivo.label} tone={efetivo.tone} />
+                      </TableCell>
+                      <TableCell>
+                        {status === "PAGO" && (
+                          <Button variant="ghost" size="icon-sm" asChild aria-label="Baixar recibo">
+                            <a href={`/api/pdf/recibo/${cobranca.id}`} target="_blank" rel="noreferrer">
+                              <FileTextIcon />
+                            </a>
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

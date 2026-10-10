@@ -60,3 +60,18 @@ export async function obterContrato(id: string) {
 }
 
 export type ContratoDetalhe = NonNullable<Awaited<ReturnType<typeof obterContrato>>>;
+
+/** Tudo que o PDF do contrato precisa: endereço completo do imóvel e dados completos das pessoas. */
+export async function obterContratoParaPdf(id: string) {
+  return db.contrato.findUnique({
+    where: { id },
+    include: {
+      imovel: true,
+      partes: { include: { pessoa: true } },
+      encargos: true,
+      modelo: true,
+    },
+  });
+}
+
+export type ContratoParaPdf = NonNullable<Awaited<ReturnType<typeof obterContratoParaPdf>>>;

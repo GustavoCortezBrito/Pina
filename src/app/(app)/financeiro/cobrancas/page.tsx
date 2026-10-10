@@ -1,4 +1,4 @@
-import { CalendarIcon, HandCoinsIcon } from "lucide-react";
+import { CalendarIcon, HandCoinsIcon, ReceiptIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { FilterBar, FilterSelect, MonthFilter } from "@/components/shared/filters";
 import { PageHeader } from "@/components/shared/page-header";
@@ -106,6 +106,7 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                     <div className="w-full shrink-0 sm:w-auto">
                       {podeReceber ? (
                         <ReceberDialog
+                          cobrancaId={cobranca.id}
                           saldo={cobranca.saldo}
                           vencimento={cobranca.vencimento}
                           percMulta={Number(settings.financeiro.percMulta)}
@@ -116,9 +117,15 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                             </Button>
                           }
                         />
+                      ) : cobranca.statusEfetivo === "PAGO" ? (
+                        <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+                          <a href={`/api/pdf/recibo/${cobranca.id}`} target="_blank" rel="noreferrer">
+                            <ReceiptIcon /> Recibo
+                          </a>
+                        </Button>
                       ) : (
                         <Button size="lg" variant="outline" disabled className="w-full sm:w-auto">
-                          Recebido
+                          Cancelado
                         </Button>
                       )}
                     </div>
