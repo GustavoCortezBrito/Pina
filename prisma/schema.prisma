@@ -570,6 +570,8 @@ model Arquivo {
   manutencao   Manutencao? @relation(fields: [manutencaoId], references: [id], onDelete: Cascade)
   vistoriaId   String?
   vistoria     Vistoria?   @relation(fields: [vistoriaId], references: [id], onDelete: Cascade)
+  modeloContratoId String?
+  modeloContrato   ModeloContrato? @relation(fields: [modeloContratoId], references: [id], onDelete: Cascade)
 
   enviadoPorId String?
   criadoEm     DateTime @default(now())
@@ -585,7 +587,11 @@ model ModeloContrato {
   id           String     @id @default(cuid())
   nome         String
   finalidade   Finalidade @default(RESIDENCIAL)
-  conteudo     String // texto com marcações simples (#, ##, **) e {{variaveis}}
+  // Ou "conteudo" (texto com marcações # ## ** e {{variaveis}}, gera PDF preenchido
+  // automaticamente) ou um "arquivo" enviado pronto (docx/pdf, usado como referência/baixado
+  // direto — sem substituição de variáveis). Nunca os dois.
+  conteudo     String?
+  arquivos     Arquivo[]
   padrao       Boolean    @default(false)
   ativo        Boolean    @default(true)
   contratos    Contrato[]

@@ -55,6 +55,7 @@ export async function obterContrato(id: string) {
       cobrancas: { orderBy: { competencia: "asc" }, include: { pagamentos: true } },
       vistorias: { orderBy: { data: "desc" } },
       arquivos: { orderBy: { criadoEm: "desc" } },
+      modelo: { include: { arquivos: { select: { id: true }, take: 1 } } },
     },
   });
 }

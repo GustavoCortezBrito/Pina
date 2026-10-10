@@ -18,7 +18,10 @@ export default async function ConfiguracoesPage() {
   const [settings, categorias, modelos] = await Promise.all([
     getSettings(),
     db.categoriaDespesa.findMany({ orderBy: { nome: "asc" } }),
-    db.modeloContrato.findMany({ orderBy: { nome: "asc" } }),
+    db.modeloContrato.findMany({
+      orderBy: { nome: "asc" },
+      include: { arquivos: { select: { id: true, nomeOriginal: true }, take: 1 } },
+    }),
   ]);
 
   return (

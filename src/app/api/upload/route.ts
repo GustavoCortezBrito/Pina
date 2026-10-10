@@ -30,6 +30,7 @@ const CATEGORIAS: CategoriaArquivo[] = [
 
 const MAX_IMAGEM = 15 * 1024 * 1024;
 const MAX_PDF = 25 * 1024 * 1024;
+const MAX_DOCUMENTO = 25 * 1024 * 1024;
 
 async function entidadeExiste(entidade: Entidade, id: string) {
   const where = { where: { id }, select: { id: true } } as const;
@@ -82,9 +83,13 @@ export async function POST(request: Request) {
   const criados = [];
   for (const arquivo of arquivos) {
     const buffer = Buffer.from(await arquivo.arrayBuffer());
-    const tipo = detectFileType(buffer);
+    const tipo = detectFileType(buffer, arquivo.name);
 
-    if (!tipo) return erro(`"${arquivo.name}": formato não suportado. Envie JPG, PNG, WebP ou PDF.`);
+    if (!tipo) {
+      return erro(
+        `"${arquivo.name}": formato não suportado. Envie JPG, PNG, WebP, PDF, Word (doc/docx) ou Excel (xls/xlsx).`,
+      );
+    }
     if (tipo.kind === "heic") {
       return erro(
         `"${arquivo.name}" está em HEIC. No iPhone, ajuste Câmera → Formatos → "Mais compatível", ou envie como JPG.`,
@@ -92,6 +97,9 @@ export async function POST(request: Request) {
     }
     if (tipo.kind === "pdf" && buffer.byteLength > MAX_PDF) return erro(`"${arquivo.name}" passa de 25 MB.`);
     if (tipo.kind === "image" && buffer.byteLength > MAX_IMAGEM) return erro(`"${arquivo.name}" passa de 15 MB.`);
+    if (tipo.kind === "document" && buffer.byteLength > MAX_DOCUMENTO) {
+      return erro(`"${arquivo.name}" passa de 25 MB.`);
+    }
 
     const id = randomUUID();
     const base = `${entidade}/${entidadeId}/${id}`;
@@ -117,11 +125,12 @@ export async function POST(request: Request) {
         altura: imagem.height,
       };
     } else {
-      await storage.save(`${base}.pdf`, buffer);
+      const extensao = tipo.kind === "pdf" ? "pdf" : (arquivo.name.split(".").pop()?.toLowerCase() ?? "bin");
+      await storage.save(`${base}.${extensao}`, buffer);
       dados = {
-        caminho: `${base}.pdf`,
+        caminho: `${base}.${extensao}`,
         caminhoThumb: null,
-        mime: "application/pdf",
+        mime: tipo.mime,
         tamanho: buffer.byteLength,
         largura: null,
         altura: null,

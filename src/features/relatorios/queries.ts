@@ -52,12 +52,15 @@ export type ResultadoImovel = {
 };
 
 /** Receita x despesa por imóvel no ano informado (padrão: ano corrente). */
-export async function resultadoPorImovel(ano = today().getUTCFullYear()): Promise<ResultadoImovel[]> {
+export async function resultadoPorImovel(
+  ano = today().getUTCFullYear(),
+  imovelId?: string,
+): Promise<ResultadoImovel[]> {
   const inicio = new Date(Date.UTC(ano, 0, 1));
   const fim = new Date(Date.UTC(ano + 1, 0, 1));
 
   const imoveis = await db.imovel.findMany({
-    where: { deletadoEm: null },
+    where: { deletadoEm: null, id: imovelId },
     select: {
       id: true,
       codigo: true,

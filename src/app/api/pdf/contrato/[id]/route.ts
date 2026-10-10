@@ -1,15 +1,12 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
+import { MODELO_COMERCIAL_PADRAO, MODELO_RESIDENCIAL_PADRAO } from "@/features/contratos/default-templates";
 import { montarVariaveisContrato, substituirVariaveis } from "@/features/contratos/template";
 import { obterContratoParaPdf } from "@/features/contratos/queries";
 import { formatNumeroContrato } from "@/lib/format";
 import { ContratoDocument } from "@/lib/pdf/contrato";
 import { getSession } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
-
-const MODELO_FALLBACK = `# CONTRATO DE LOCAÇÃO
-
-Nenhum modelo de contrato foi configurado para esta finalidade. Cadastre um modelo em Configurações → Modelos de contrato e marque-o como padrão.`;
 
 export async function GET(request: Request, ctx: RouteContext<"/api/pdf/contrato/[id]">) {
   const session = await getSession();
@@ -21,7 +18,11 @@ export async function GET(request: Request, ctx: RouteContext<"/api/pdf/contrato
 
   const settings = await getSettings();
   const variaveis = montarVariaveisContrato(contrato, settings.locador);
-  const conteudo = substituirVariaveis(contrato.modelo?.conteudo ?? MODELO_FALLBACK, variaveis);
+  // Modelo cadastrado por texto > modelo padrão do sistema para a finalidade (um modelo
+  // "por arquivo" cadastrado não tem texto para substituir variáveis, então também cai aqui).
+  const modeloPadraoSistema =
+    contrato.finalidade === "COMERCIAL" ? MODELO_COMERCIAL_PADRAO : MODELO_RESIDENCIAL_PADRAO;
+  const conteudo = substituirVariaveis(contrato.modelo?.conteudo ?? modeloPadraoSistema, variaveis);
   const titulo = `Contrato nº ${formatNumeroContrato(contrato.numero)}`;
 
   const buffer = await renderToBuffer(

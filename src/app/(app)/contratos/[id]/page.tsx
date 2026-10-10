@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FileList } from "@/components/shared/file-list";
+import { FileUploader } from "@/components/shared/file-uploader";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,8 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
 
   const status = STATUS_CONTRATO[contrato.status];
   const hoje = today();
+  // Modelo "por arquivo" (sem conteúdo em texto): baixa o arquivo enviado em vez de gerar o PDF.
+  const arquivoDoModelo = contrato.modelo?.conteudo == null ? contrato.modelo?.arquivos[0] : undefined;
 
   return (
     <div className="space-y-6">
@@ -77,9 +80,15 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
               </>
             )}
             <Button variant="outline" asChild>
-              <a href={`/api/pdf/contrato/${contrato.id}`} target="_blank" rel="noreferrer">
-                <FileTextIcon /> Gerar PDF
-              </a>
+              {arquivoDoModelo ? (
+                <a href={`/api/arquivos/${arquivoDoModelo.id}?download=1`} target="_blank" rel="noreferrer">
+                  <FileTextIcon /> Baixar modelo
+                </a>
+              ) : (
+                <a href={`/api/pdf/contrato/${contrato.id}`} target="_blank" rel="noreferrer">
+                  <FileTextIcon /> Gerar PDF
+                </a>
+              )}
             </Button>
           </>
         }
@@ -221,7 +230,15 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
           )}
         </TabsContent>
 
-        <TabsContent value="arquivos">
+        <TabsContent value="arquivos" className="space-y-4">
+          <FileUploader
+            entidade="contrato"
+            entidadeId={contrato.id}
+            categoria="CONTRATO_ASSINADO"
+            accept="application/pdf,.doc,.docx,.odt,.xls,.xlsx,image/jpeg,image/png"
+            titulo="Envie o contrato assinado ou outros documentos"
+            descricao="PDF, Word (doc/docx), Excel ou imagem"
+          />
           <FileList
             arquivos={contrato.arquivos}
             vazio="Nenhum arquivo anexado (contrato assinado, etc.)."
