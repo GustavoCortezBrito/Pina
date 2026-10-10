@@ -5,7 +5,12 @@ import { parseISOMonth } from "@/lib/dates";
 
 export const DESPESAS_POR_PAGINA = 20;
 
-export type FiltrosDespesa = { imovelId?: string; categoriaId?: string; mes?: string; page?: number };
+export type FiltrosDespesa = {
+  imovelId?: string;
+  categoriaId?: string;
+  mes?: string;
+  page?: number;
+};
 
 export async function listarDespesas(filtros: FiltrosDespesa) {
   const page = Math.max(1, filtros.page ?? 1);

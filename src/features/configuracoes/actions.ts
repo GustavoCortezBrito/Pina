@@ -47,7 +47,10 @@ export async function alternarCategoriaDespesa(id: string, ativo: boolean) {
   return runAction(
     async () => {
       await requireAdmin();
-      await db.categoriaDespesa.update({ where: { id: z.string().min(1).parse(id) }, data: { ativo } });
+      await db.categoriaDespesa.update({
+        where: { id: z.string().min(1).parse(id) },
+        data: { ativo },
+      });
     },
     { message: "Categoria atualizada." },
   );
@@ -80,7 +83,8 @@ export async function excluirModeloContrato(id: string) {
       await requireAdmin();
       const modeloId = z.string().min(1).parse(id);
       const emUso = await db.contrato.count({ where: { modeloId } });
-      if (emUso > 0) throw new AppError("Este modelo está em uso por contratos e não pode ser excluído.");
+      if (emUso > 0)
+        throw new AppError("Este modelo está em uso por contratos e não pode ser excluído.");
       await db.modeloContrato.delete({ where: { id: modeloId } });
     },
     { message: "Modelo excluído." },

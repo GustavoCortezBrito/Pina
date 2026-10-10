@@ -80,7 +80,12 @@ export function PessoaForm({ pessoaId, valores }: { pessoaId?: string; valores?:
             </FormField>
 
             {tipo === "PJ" && (
-              <FormField control={form.control} name="nomeFantasia" label="Nome fantasia" className="sm:col-span-2">
+              <FormField
+                control={form.control}
+                name="nomeFantasia"
+                label="Nome fantasia"
+                className="sm:col-span-2"
+              >
                 {(field) => <Input {...field} id="nomeFantasia" />}
               </FormField>
             )}
@@ -99,15 +104,33 @@ export function PessoaForm({ pessoaId, valores }: { pessoaId?: string; valores?:
                 <FormField control={form.control} name="rg" label="RG" className="sm:col-span-1">
                   {(field) => <Input {...field} id="rg" />}
                 </FormField>
-                <FormField control={form.control} name="orgaoEmissor" label="Órgão emissor" className="sm:col-span-1">
+                <FormField
+                  control={form.control}
+                  name="orgaoEmissor"
+                  label="Órgão emissor"
+                  className="sm:col-span-1"
+                >
                   {(field) => <Input {...field} id="orgaoEmissor" placeholder="SSP/SP" />}
                 </FormField>
-                <FormField control={form.control} name="dataNascimento" label="Nascimento" className="sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="dataNascimento"
+                  label="Nascimento"
+                  className="sm:col-span-2"
+                >
                   {(field) => <Input {...field} id="dataNascimento" type="date" />}
                 </FormField>
-                <FormField control={form.control} name="estadoCivil" label="Estado civil" className="sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="estadoCivil"
+                  label="Estado civil"
+                  className="sm:col-span-2"
+                >
                   {(field) => (
-                    <Select value={field.value || "_"} onValueChange={(v) => field.onChange(v === "_" ? "" : v)}>
+                    <Select
+                      value={field.value || "_"}
+                      onValueChange={(v) => field.onChange(v === "_" ? "" : v)}
+                    >
                       <SelectTrigger id="estadoCivil" className="w-full">
                         <SelectValue placeholder="Não informado" />
                       </SelectTrigger>
@@ -122,10 +145,20 @@ export function PessoaForm({ pessoaId, valores }: { pessoaId?: string; valores?:
                     </Select>
                   )}
                 </FormField>
-                <FormField control={form.control} name="profissao" label="Profissão" className="sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="profissao"
+                  label="Profissão"
+                  className="sm:col-span-2"
+                >
                   {(field) => <Input {...field} id="profissao" />}
                 </FormField>
-                <FormField control={form.control} name="rendaMensal" label="Renda mensal" className="sm:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="rendaMensal"
+                  label="Renda mensal"
+                  className="sm:col-span-2"
+                >
                   {(field) => <MoneyInput {...field} id="rendaMensal" />}
                 </FormField>
               </>
@@ -162,7 +195,9 @@ export function PessoaForm({ pessoaId, valores }: { pessoaId?: string; valores?:
                         const atual = form.getValues("papeis");
                         form.setValue(
                           "papeis",
-                          checked ? [...atual, opcao.value] : atual.filter((p) => p !== opcao.value),
+                          checked
+                            ? [...atual, opcao.value]
+                            : atual.filter((p) => p !== opcao.value),
                           { shouldValidate: true },
                         );
                       }}

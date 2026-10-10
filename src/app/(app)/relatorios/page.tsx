@@ -2,7 +2,13 @@ import { ChartColumnIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
 import { receitaDespesaMensal, resultadoPorImovel } from "@/features/relatorios/queries";
 import { formatBRL } from "@/lib/money";

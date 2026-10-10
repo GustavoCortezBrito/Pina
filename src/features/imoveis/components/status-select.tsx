@@ -25,13 +25,13 @@ export function ImovelStatusSelect({ id, status }: { id: string; status: StatusI
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {options(Object.fromEntries(Object.entries(STATUS_IMOVEL).map(([k, v]) => [k, v.label]))).map(
-          (opcao) => (
-            <SelectItem key={opcao.value} value={opcao.value}>
-              {opcao.label}
-            </SelectItem>
-          ),
-        )}
+        {options(
+          Object.fromEntries(Object.entries(STATUS_IMOVEL).map(([k, v]) => [k, v.label])),
+        ).map((opcao) => (
+          <SelectItem key={opcao.value} value={opcao.value}>
+            {opcao.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

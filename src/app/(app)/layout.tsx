@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             />
           </div>
         </header>
-        <main className="min-w-0 flex-1 p-4 md:p-6">
+        <main className="mx-auto w-full max-w-[1500px] min-w-0 flex-1 p-4 md:p-6">
           <RouteTransition>{children}</RouteTransition>
         </main>
       </SidebarInset>

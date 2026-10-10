@@ -167,18 +167,32 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
         </TabsContent>
 
         <TabsContent value="fotos" className="space-y-4">
-          <FileUploader entidade="imovel" entidadeId={imovel.id} categoria="FOTO" accept="image/jpeg,image/png,image/webp" titulo="Arraste as fotos ou clique para escolher" descricao="JPG, PNG ou WebP" />
+          <FileUploader
+            entidade="imovel"
+            entidadeId={imovel.id}
+            categoria="FOTO"
+            accept="image/jpeg,image/png,image/webp"
+            titulo="Arraste as fotos ou clique para escolher"
+            descricao="JPG, PNG ou WebP"
+          />
           <PhotoGallery fotos={fotos} />
         </TabsContent>
 
         <TabsContent value="documentos" className="space-y-4">
-          <FileUploader entidade="imovel" entidadeId={imovel.id} categoria="DOCUMENTO" titulo="Matrícula, IPTU, contas..." />
+          <FileUploader
+            entidade="imovel"
+            entidadeId={imovel.id}
+            categoria="DOCUMENTO"
+            titulo="Matrícula, IPTU, contas..."
+          />
           <FileList arquivos={documentos} />
         </TabsContent>
 
         <TabsContent value="contratos" className="space-y-3">
           {imovel.contratos.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nenhum contrato registrado ainda.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum contrato registrado ainda.
+            </p>
           ) : (
             imovel.contratos.map((contrato) => {
               const status = STATUS_CONTRATO[contrato.status];
@@ -232,7 +246,9 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
 
         <TabsContent value="manutencoes" className="space-y-3">
           {imovel.manutencoes.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma manutenção registrada.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhuma manutenção registrada.
+            </p>
           ) : (
             imovel.manutencoes.map((m) => {
               const status = STATUS_MANUTENCAO[m.status];

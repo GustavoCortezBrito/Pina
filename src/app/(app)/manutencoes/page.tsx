@@ -9,7 +9,7 @@ import { ManutencaoStatusSelect } from "@/features/manutencoes/components/status
 import { listarManutencoes } from "@/features/manutencoes/queries";
 import { opcoesImoveis } from "@/features/imoveis/queries";
 import { formatDate } from "@/lib/dates";
-import { PRIORIDADE } from "@/lib/labels";
+import { PRIORIDADE, STATUS_MANUTENCAO } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Manutenções" };
@@ -56,6 +56,7 @@ export default async function ManutencoesPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {manutencoes.map((item, index) => {
+            const status = STATUS_MANUTENCAO[item.status];
             const prioridade = PRIORIDADE[item.prioridade];
             return (
               <Card
@@ -70,7 +71,7 @@ export default async function ManutencoesPage() {
                   <span
                     className={cn(
                       "flex size-12 shrink-0 items-center justify-center rounded-full",
-                      TONE_ICON_BG[prioridade.tone],
+                      TONE_ICON_BG[status.tone],
                     )}
                   >
                     <WrenchIcon className="size-5" />

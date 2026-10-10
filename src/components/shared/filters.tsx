@@ -36,7 +36,13 @@ function useParamUpdater() {
   );
 }
 
-export function FilterBar({ children, className }: { children: React.ReactNode; className?: string }) {
+export function FilterBar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return <div className={cn("flex flex-wrap items-center gap-2", className)}>{children}</div>;
 }
 
@@ -77,7 +83,12 @@ export function SearchInput({
       />
       {value && (
         <InputGroupAddon align="inline-end">
-          <Button variant="ghost" size="icon-xs" aria-label="Limpar busca" onClick={() => setValue("")}>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label="Limpar busca"
+            onClick={() => setValue("")}
+          >
             <XIcon />
           </Button>
         </InputGroupAddon>
@@ -104,7 +115,10 @@ export function FilterSelect({
   const value = searchParams.get(param) ?? TODOS;
 
   return (
-    <Select value={value} onValueChange={(next) => update({ [param]: next === TODOS ? null : next })}>
+    <Select
+      value={value}
+      onValueChange={(next) => update({ [param]: next === TODOS ? null : next })}
+    >
       <SelectTrigger className={cn("w-auto min-w-40", className)} aria-label={placeholder}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

@@ -6,7 +6,13 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { DespesaDialog } from "@/features/financeiro/despesas/components/despesa-dialog";
 import { excluirDespesa } from "@/features/financeiro/despesas/actions";
 import { categoriasAtivas, listarDespesas } from "@/features/financeiro/despesas/queries";
@@ -59,20 +65,20 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
         </Empty>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {itens.map((despesa, index) => (
               <Card
                 key={despesa.id}
-                className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                className="animate-in duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
-                <CardContent className="flex flex-wrap items-center gap-4 p-5 sm:flex-nowrap sm:p-6">
-                  <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                     <WalletIcon className="size-6" />
                   </span>
 
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="truncate text-lg font-semibold">{despesa.categoria.nome}</p>
+                    <p className="truncate text-base font-semibold">{despesa.categoria.nome}</p>
                     <p className="text-sm text-muted-foreground">
                       {formatDate(despesa.data)}
                       {despesa.imovel && ` · ${despesa.imovel.codigo}`}
@@ -80,7 +86,9 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
                     </p>
                   </div>
 
-                  <p className="shrink-0 text-xl font-bold tabular-nums">{formatBRL(despesa.valor)}</p>
+                  <p className="shrink-0 text-lg font-bold tabular-nums">
+                    {formatBRL(despesa.valor)}
+                  </p>
 
                   <div className="flex shrink-0 gap-1">
                     <DespesaDialog

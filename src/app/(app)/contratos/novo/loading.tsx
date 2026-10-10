@@ -4,7 +4,7 @@ import { PageHeaderSkeleton } from "@/components/shared/skeletons";
 
 export default function Loading() {
   return (
-    <div className="animate-in fade-in mx-auto max-w-3xl space-y-6 duration-300">
+    <div className="mx-auto max-w-3xl animate-in space-y-6 duration-300 fade-in">
       <PageHeaderSkeleton withActions={false} />
       <div className="flex gap-2">
         {Array.from({ length: 4 }).map((_, i) => (

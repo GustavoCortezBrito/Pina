@@ -27,12 +27,22 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Finalidade } from "@/generated/prisma/enums";
 import { excluirModeloContrato, salvarModeloContrato } from "../actions";
 
-export type Modelo = { id: string; nome: string; finalidade: Finalidade; conteudo: string; padrao: boolean };
+export type Modelo = {
+  id: string;
+  nome: string;
+  finalidade: Finalidade;
+  conteudo: string;
+  padrao: boolean;
+};
 
 export function ModelosContrato({ modelos }: { modelos: Modelo[] }) {
   const { pending, run } = useAction();
   const [editando, setEditando] = React.useState<Modelo | null>(null);
-  const [form, setForm] = React.useState({ nome: "", finalidade: "RESIDENCIAL" as Finalidade, conteudo: "" });
+  const [form, setForm] = React.useState({
+    nome: "",
+    finalidade: "RESIDENCIAL" as Finalidade,
+    conteudo: "",
+  });
 
   function abrirNovo() {
     setForm({ nome: "", finalidade: "RESIDENCIAL", conteudo: "" });
@@ -63,7 +73,12 @@ export function ModelosContrato({ modelos }: { modelos: Modelo[] }) {
                 <p className="text-xs text-muted-foreground">{modelo.finalidade}</p>
               </div>
               <div className="flex gap-1">
-                <Button variant="ghost" size="icon-sm" onClick={() => abrirEdicao(modelo)} aria-label="Editar">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => abrirEdicao(modelo)}
+                  aria-label="Editar"
+                >
                   <PencilIcon />
                 </Button>
                 <ConfirmAction
@@ -88,7 +103,8 @@ export function ModelosContrato({ modelos }: { modelos: Modelo[] }) {
           <DialogHeader>
             <DialogTitle>{editando?.id ? "Editar modelo" : "Novo modelo"}</DialogTitle>
             <DialogDescription>
-              Use variáveis como <code>{"{{locatario.nome}}"}</code> e <code>{"{{imovel.endereco}}"}</code>.
+              Use variáveis como <code>{"{{locatario.nome}}"}</code> e{" "}
+              <code>{"{{imovel.endereco}}"}</code>.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">

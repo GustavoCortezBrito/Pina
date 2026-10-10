@@ -51,7 +51,11 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={aberto}
-          className={cn("w-full justify-between font-normal", !selecionado && "text-muted-foreground", className)}
+          className={cn(
+            "w-full justify-between font-normal",
+            !selecionado && "text-muted-foreground",
+            className,
+          )}
         >
           <span className="truncate">{selecionado?.label ?? placeholder}</span>
           <ChevronsUpDownIcon className="opacity-50" />
@@ -88,7 +92,9 @@ export function Combobox({
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">{option.label}</span>
                     {option.description && (
-                      <span className="block truncate text-xs text-muted-foreground">{option.description}</span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {option.description}
+                      </span>
                     )}
                   </span>
                 </CommandItem>

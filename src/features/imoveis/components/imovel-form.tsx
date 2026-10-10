@@ -61,7 +61,12 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
         </CardHeader>
         <CardContent>
           <FieldGroup className="grid gap-5 sm:grid-cols-6">
-            <FormField control={form.control} name="codigo" label="Código" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="codigo"
+              label="Código"
+              className="sm:col-span-2"
+            >
               {(field) => (
                 <Input
                   {...field}
@@ -73,7 +78,12 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
               )}
             </FormField>
 
-            <FormField control={form.control} name="titulo" label="Nome do imóvel" className="sm:col-span-4">
+            <FormField
+              control={form.control}
+              name="titulo"
+              label="Nome do imóvel"
+              className="sm:col-span-4"
+            >
               {(field) => <Input {...field} id="titulo" placeholder="Apto 02 – Ed. ADM" />}
             </FormField>
 
@@ -94,7 +104,12 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
               )}
             </FormField>
 
-            <FormField control={form.control} name="status" label="Situação" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="status"
+              label="Situação"
+              className="sm:col-span-2"
+            >
               {(field) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="status" className="w-full">
@@ -169,23 +184,76 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
         </CardHeader>
         <CardContent>
           <FieldGroup className="grid gap-5 sm:grid-cols-6">
-            <FormField control={form.control} name="quartos" label="Quartos" className="sm:col-span-1">
-              {(field) => <NumberInput {...field} id="quartos" min={0} onChange={(v) => field.onChange(v ?? 0)} />}
+            <FormField
+              control={form.control}
+              name="quartos"
+              label="Quartos"
+              className="sm:col-span-1"
+            >
+              {(field) => (
+                <NumberInput
+                  {...field}
+                  id="quartos"
+                  min={0}
+                  onChange={(v) => field.onChange(v ?? 0)}
+                />
+              )}
             </FormField>
-            <FormField control={form.control} name="suites" label="Suítes" className="sm:col-span-1">
-              {(field) => <NumberInput {...field} id="suites" min={0} onChange={(v) => field.onChange(v ?? 0)} />}
+            <FormField
+              control={form.control}
+              name="suites"
+              label="Suítes"
+              className="sm:col-span-1"
+            >
+              {(field) => (
+                <NumberInput
+                  {...field}
+                  id="suites"
+                  min={0}
+                  onChange={(v) => field.onChange(v ?? 0)}
+                />
+              )}
             </FormField>
-            <FormField control={form.control} name="banheiros" label="Banheiros" className="sm:col-span-1">
-              {(field) => <NumberInput {...field} id="banheiros" min={0} onChange={(v) => field.onChange(v ?? 0)} />}
+            <FormField
+              control={form.control}
+              name="banheiros"
+              label="Banheiros"
+              className="sm:col-span-1"
+            >
+              {(field) => (
+                <NumberInput
+                  {...field}
+                  id="banheiros"
+                  min={0}
+                  onChange={(v) => field.onChange(v ?? 0)}
+                />
+              )}
             </FormField>
             <FormField control={form.control} name="vagas" label="Vagas" className="sm:col-span-1">
-              {(field) => <NumberInput {...field} id="vagas" min={0} onChange={(v) => field.onChange(v ?? 0)} />}
+              {(field) => (
+                <NumberInput
+                  {...field}
+                  id="vagas"
+                  min={0}
+                  onChange={(v) => field.onChange(v ?? 0)}
+                />
+              )}
             </FormField>
-            <FormField control={form.control} name="areaM2" label="Área (m²)" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="areaM2"
+              label="Área (m²)"
+              className="sm:col-span-2"
+            >
               {(field) => <NumberInput {...field} id="areaM2" min={0} step="0.01" />}
             </FormField>
 
-            <FormField control={form.control} name="mobilia" label="Mobília" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="mobilia"
+              label="Mobília"
+              className="sm:col-span-2"
+            >
               {(field) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger id="mobilia" className="w-full">
@@ -202,7 +270,11 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
               )}
             </FormField>
 
-            <FormField control={form.control} name="aceitaPet" className="sm:col-span-4 sm:self-end">
+            <FormField
+              control={form.control}
+              name="aceitaPet"
+              className="sm:col-span-4 sm:self-end"
+            >
               {(field) => (
                 <label className="flex items-center gap-2 text-sm">
                   <Checkbox
@@ -252,13 +324,28 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
         </CardHeader>
         <CardContent>
           <FieldGroup className="grid gap-5 sm:grid-cols-4">
-            <FormField control={form.control} name="matricula" label="Matrícula" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="matricula"
+              label="Matrícula"
+              className="sm:col-span-2"
+            >
               {(field) => <Input {...field} id="matricula" />}
             </FormField>
-            <FormField control={form.control} name="inscricaoIptu" label="Inscrição do IPTU" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="inscricaoIptu"
+              label="Inscrição do IPTU"
+              className="sm:col-span-2"
+            >
               {(field) => <Input {...field} id="inscricaoIptu" />}
             </FormField>
-            <FormField control={form.control} name="instalacaoAgua" label="Instalação de água" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="instalacaoAgua"
+              label="Instalação de água"
+              className="sm:col-span-2"
+            >
               {(field) => <Input {...field} id="instalacaoAgua" />}
             </FormField>
             <FormField
@@ -269,9 +356,19 @@ export function ImovelForm({ imovelId, valores, empreendimentos, proprietarios }
             >
               {(field) => <Input {...field} id="instalacaoEnergia" />}
             </FormField>
-            <FormField control={form.control} name="descricao" label="Descrição" className="sm:col-span-4">
+            <FormField
+              control={form.control}
+              name="descricao"
+              label="Descrição"
+              className="sm:col-span-4"
+            >
               {(field) => (
-                <Textarea {...field} id="descricao" rows={3} placeholder="Como o imóvel é, o que tem de diferente..." />
+                <Textarea
+                  {...field}
+                  id="descricao"
+                  rows={3}
+                  placeholder="Como o imóvel é, o que tem de diferente..."
+                />
               )}
             </FormField>
             <FormField

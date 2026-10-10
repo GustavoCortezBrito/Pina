@@ -20,7 +20,10 @@ export function MoneyInput({
   const display =
     value == null
       ? ""
-      : (value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      : (value / 100).toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
 
   return (
     <InputGroup>

@@ -6,7 +6,13 @@ import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ReceberDialog } from "@/features/financeiro/cobrancas/components/receber-dialog";
 import { listarCobrancas } from "@/features/financeiro/cobrancas/queries";
 import { formatDate, formatMonth } from "@/lib/dates";
@@ -62,21 +68,22 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
         </Empty>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {itens.map((cobranca, index) => {
               const status = STATUS_COBRANCA[cobranca.statusEfetivo];
-              const podeReceber = cobranca.statusEfetivo !== "PAGO" && cobranca.statusEfetivo !== "CANCELADO";
+              const podeReceber =
+                cobranca.statusEfetivo !== "PAGO" && cobranca.statusEfetivo !== "CANCELADO";
               const inquilino = cobranca.contrato.partes[0]?.pessoa.nome ?? "—";
               return (
                 <Card
                   key={cobranca.id}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
+                  className="animate-in duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
-                  <CardContent className="flex flex-wrap items-center gap-4 p-5 sm:flex-nowrap sm:p-6">
+                  <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
                     <span
                       className={cn(
-                        "flex size-14 shrink-0 items-center justify-center rounded-full",
+                        "flex size-11 shrink-0 items-center justify-center rounded-full",
                         TONE_ICON_BG[status.tone],
                       )}
                     >
@@ -85,13 +92,14 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
 
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-lg font-semibold capitalize">
+                        <p className="truncate text-base font-semibold capitalize">
                           {formatMonth(cobranca.competencia)}
                         </p>
                         <StatusBadge label={status.label} tone={status.tone} className="text-xs" />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {cobranca.contrato.imovel.titulo} ({cobranca.contrato.imovel.codigo}) · {inquilino}
+                        {cobranca.contrato.imovel.titulo} ({cobranca.contrato.imovel.codigo}) ·{" "}
+                        {inquilino}
                       </p>
                       <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <CalendarIcon className="size-4" />
@@ -100,7 +108,7 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                     </div>
 
                     <div className="shrink-0 text-right">
-                      <p className="text-xl font-bold tabular-nums">{formatBRL(cobranca.saldo)}</p>
+                      <p className="text-lg font-bold tabular-nums">{formatBRL(cobranca.saldo)}</p>
                     </div>
 
                     <div className="w-full shrink-0 sm:w-auto">

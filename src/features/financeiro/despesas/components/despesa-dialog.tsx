@@ -50,7 +50,9 @@ export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) 
   });
 
   async function onSubmit(dados: DespesaInput) {
-    const result = await run(() => (despesa ? atualizarDespesa(despesa.id, dados) : criarDespesa(dados)));
+    const result = await run(() =>
+      despesa ? atualizarDespesa(despesa.id, dados) : criarDespesa(dados),
+    );
     if (result.ok) setAberto(false);
     else applyServerErrors(form, result);
   }
@@ -72,30 +74,59 @@ export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) 
           <FieldGroup className="grid gap-5 sm:grid-cols-2">
             <FormField control={form.control} name="categoriaId" label="Categoria">
               {(field) => (
-                <Combobox value={field.value} onChange={(v) => field.onChange(v ?? "")} options={categorias} />
+                <Combobox
+                  value={field.value}
+                  onChange={(v) => field.onChange(v ?? "")}
+                  options={categorias}
+                />
               )}
             </FormField>
             <FormField control={form.control} name="imovelId" label="Imóvel" description="Opcional">
               {(field) => (
-                <Combobox value={field.value} onChange={field.onChange} options={imoveis} limpar="Nenhum" placeholder="Nenhum" />
+                <Combobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={imoveis}
+                  limpar="Nenhum"
+                  placeholder="Nenhum"
+                />
               )}
             </FormField>
             <FormField control={form.control} name="data" label="Data">
               {(field) => <Input {...field} id="despesa-data" type="date" />}
             </FormField>
             <FormField control={form.control} name="valor" label="Valor">
-              {(field) => <MoneyInput {...field} id="despesa-valor" onChange={(v) => field.onChange(v ?? 0)} />}
+              {(field) => (
+                <MoneyInput
+                  {...field}
+                  id="despesa-valor"
+                  onChange={(v) => field.onChange(v ?? 0)}
+                />
+              )}
             </FormField>
-            <FormField control={form.control} name="fornecedor" label="Fornecedor" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="fornecedor"
+              label="Fornecedor"
+              className="sm:col-span-2"
+            >
               {(field) => <Input {...field} id="despesa-fornecedor" />}
             </FormField>
-            <FormField control={form.control} name="descricao" label="Descrição" className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="descricao"
+              label="Descrição"
+              className="sm:col-span-2"
+            >
               {(field) => <Textarea {...field} id="despesa-descricao" rows={2} />}
             </FormField>
             <FormField control={form.control} name="pago" className="sm:col-span-2">
               {(field) => (
                 <label className="flex items-center gap-2 text-sm">
-                  <Checkbox checked={field.value} onCheckedChange={(c) => field.onChange(c === true)} />
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(c) => field.onChange(c === true)}
+                  />
                   Já foi pago
                 </label>
               )}

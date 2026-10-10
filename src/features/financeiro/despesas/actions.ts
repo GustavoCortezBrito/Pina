@@ -26,8 +26,15 @@ export async function criarDespesa(input: unknown) {
     async () => {
       const user = await requireUser();
       const dados = despesaSchema.parse(input);
-      const despesa = await db.despesa.create({ data: { ...paraBanco(dados), criadoPorId: user.id } });
-      await audit({ usuarioId: user.id, acao: "CREATE", entidade: "Despesa", entidadeId: despesa.id });
+      const despesa = await db.despesa.create({
+        data: { ...paraBanco(dados), criadoPorId: user.id },
+      });
+      await audit({
+        usuarioId: user.id,
+        acao: "CREATE",
+        entidade: "Despesa",
+        entidadeId: despesa.id,
+      });
       return { id: despesa.id };
     },
     { message: "Despesa registrada." },
@@ -53,7 +60,12 @@ export async function excluirDespesa(id: string) {
       const user = await requireAdmin();
       const despesaId = z.string().min(1).parse(id);
       await db.despesa.delete({ where: { id: despesaId } });
-      await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Despesa", entidadeId: despesaId });
+      await audit({
+        usuarioId: user.id,
+        acao: "DELETE",
+        entidade: "Despesa",
+        entidadeId: despesaId,
+      });
     },
     { message: "Despesa excluída." },
   );

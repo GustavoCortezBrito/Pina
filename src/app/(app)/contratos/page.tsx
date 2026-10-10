@@ -7,7 +7,13 @@ import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { StatusContrato } from "@/generated/prisma/enums";
 import { listarContratos } from "@/features/contratos/queries";
 import { formatDate } from "@/lib/dates";
@@ -59,7 +65,9 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
         <FilterSelect
           param="status"
           placeholder="Status"
-          options={options(Object.fromEntries(Object.entries(STATUS_CONTRATO).map(([k, v]) => [k, v.label])))}
+          options={options(
+            Object.fromEntries(Object.entries(STATUS_CONTRATO).map(([k, v]) => [k, v.label])),
+          )}
         />
       </FilterBar>
 
@@ -75,7 +83,7 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
         </Empty>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {itens.map((contrato, index) => {
               const status = STATUS_CONTRATO[contrato.status];
               const locatario = contrato.partes.find((p) => p.papel === "LOCATARIO");
@@ -84,27 +92,34 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                 <Link
                   key={contrato.id}
                   href={`/contratos/${contrato.id}`}
-                  className="animate-in fade-in slide-in-from-bottom-2 block rounded-2xl duration-500 fill-mode-both"
+                  className="block animate-in rounded-2xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
                   <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-                    <CardContent className="flex flex-wrap items-center gap-4 p-5 sm:flex-nowrap sm:p-6">
+                    <CardContent className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap">
                       <span
                         className={cn(
-                          "flex size-14 shrink-0 items-center justify-center rounded-full",
+                          "flex size-11 shrink-0 items-center justify-center rounded-full",
                           TONE_ICON_BG[status.tone],
                         )}
                       >
-                        <FileSignatureIcon className="size-6" />
+                        <FileSignatureIcon className="size-5" />
                       </span>
 
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-lg font-semibold">{contrato.imovel.titulo}</p>
-                          <StatusBadge label={status.label} tone={status.tone} className="text-xs" />
+                          <p className="truncate text-base font-semibold">
+                            {contrato.imovel.titulo}
+                          </p>
+                          <StatusBadge
+                            label={status.label}
+                            tone={status.tone}
+                            className="text-xs"
+                          />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Contrato nº {formatNumeroContrato(contrato.numero)} · {contrato.imovel.codigo}
+                          Contrato nº {formatNumeroContrato(contrato.numero)} ·{" "}
+                          {contrato.imovel.codigo}
                         </p>
                         {locatario && (
                           <p className="flex items-center gap-1.5 text-sm">
@@ -112,7 +127,10 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                             <span className="font-medium">{locatario.pessoa.nome}</span>
                             {outrasPartes.length > 0 && (
                               <span className="text-muted-foreground">
-                                · {outrasPartes.map((p) => `${PAPEL_CONTRATO[p.papel]}: ${p.pessoa.nome}`).join(", ")}
+                                ·{" "}
+                                {outrasPartes
+                                  .map((p) => `${PAPEL_CONTRATO[p.papel]}: ${p.pessoa.nome}`)
+                                  .join(", ")}
                               </span>
                             )}
                           </p>
@@ -120,11 +138,13 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                       </div>
 
                       <div className="shrink-0 text-right">
-                        <p className="text-xl font-bold tabular-nums">{formatBRL(contrato.valorAluguel)}</p>
+                        <p className="text-lg font-bold tabular-nums">
+                          {formatBRL(contrato.valorAluguel)}
+                        </p>
                         <p className="text-sm text-muted-foreground">por mês</p>
                       </div>
 
-                      <div className="hidden shrink-0 border-l pl-4 text-right text-sm text-muted-foreground md:block">
+                      <div className="hidden shrink-0 border-l pl-4 text-right text-sm text-muted-foreground 2xl:block">
                         <p>Início {formatDate(contrato.dataInicio)}</p>
                         <p>Fim {formatDate(contrato.dataFim)}</p>
                       </div>

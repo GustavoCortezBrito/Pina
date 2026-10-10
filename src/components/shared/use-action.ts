@@ -14,7 +14,7 @@ export function useAction() {
   const [pending, startTransition] = React.useTransition();
 
   const run = React.useCallback(
-    <T,>(
+    <T>(
       action: () => Promise<ActionResult<T>>,
       options: { success?: string; onSuccess?: (data: T) => void; refresh?: boolean } = {},
     ) =>

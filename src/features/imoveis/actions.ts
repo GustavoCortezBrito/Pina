@@ -60,7 +60,12 @@ export async function criarImovel(input: unknown) {
       await garantirCodigoLivre(dados.codigo);
 
       const imovel = await db.imovel.create({ data: paraBanco(dados) });
-      await audit({ usuarioId: user.id, acao: "CREATE", entidade: "Imovel", entidadeId: imovel.id });
+      await audit({
+        usuarioId: user.id,
+        acao: "CREATE",
+        entidade: "Imovel",
+        entidadeId: imovel.id,
+      });
       return { id: imovel.id };
     },
     { message: "Imóvel cadastrado." },
@@ -107,7 +112,13 @@ export async function alterarStatusImovel(input: unknown) {
       }
 
       await db.imovel.update({ where: { id }, data: { status } });
-      await audit({ usuarioId: user.id, acao: "UPDATE_STATUS", entidade: "Imovel", entidadeId: id, dados: { status } });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE_STATUS",
+        entidade: "Imovel",
+        entidadeId: id,
+        dados: { status },
+      });
     },
     { message: "Status atualizado." },
   );
@@ -126,7 +137,10 @@ export async function excluirImovel(id: string) {
         );
       }
 
-      await db.imovel.update({ where: { id: imovelId }, data: { deletadoEm: today(), status: "INATIVO" } });
+      await db.imovel.update({
+        where: { id: imovelId },
+        data: { deletadoEm: today(), status: "INATIVO" },
+      });
       await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Imovel", entidadeId: imovelId });
     },
     { message: "Imóvel excluído." },

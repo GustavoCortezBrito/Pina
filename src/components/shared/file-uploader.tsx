@@ -48,7 +48,9 @@ export function FileUploader({
         return;
       }
       toast.success(
-        data.arquivos?.length === 1 ? "1 arquivo enviado." : `${data.arquivos?.length} arquivos enviados.`,
+        data.arquivos?.length === 1
+          ? "1 arquivo enviado."
+          : `${data.arquivos?.length} arquivos enviados.`,
       );
       router.refresh();
     } catch {
@@ -83,7 +85,11 @@ export function FileUploader({
         disabled={enviando}
         className="flex w-full flex-col items-center gap-1 px-4 py-6 text-center text-sm disabled:opacity-60"
       >
-        {enviando ? <Spinner className="size-5" /> : <UploadCloudIcon className="size-5 text-muted-foreground" />}
+        {enviando ? (
+          <Spinner className="size-5" />
+        ) : (
+          <UploadCloudIcon className="size-5 text-muted-foreground" />
+        )}
         <span className="font-medium">{enviando ? "Enviando..." : titulo}</span>
         <span className="text-xs text-muted-foreground">{descricao}</span>
       </button>

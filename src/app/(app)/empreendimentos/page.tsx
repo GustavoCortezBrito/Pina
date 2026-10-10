@@ -3,11 +3,15 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Progress } from "@/components/ui/progress";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { EmpreendimentoCard } from "@/features/empreendimentos/components/empreendimento-card";
 import { listarEmpreendimentos } from "@/features/empreendimentos/queries";
-import { formatEndereco } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Empreendimentos" };
 
@@ -41,32 +45,13 @@ export default async function EmpreendimentosPage() {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {empreendimentos.map((empreendimento, index) => (
-            <Link
+            <EmpreendimentoCard
               key={empreendimento.id}
-              href={`/empreendimentos/${empreendimento.id}`}
-              className="animate-in fade-in slide-in-from-bottom-2 block rounded-xl duration-500 fill-mode-both"
-              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-            >
-              <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="font-semibold">{empreendimento.nome}</p>
-                    <p className="text-xs text-muted-foreground">{formatEndereco(empreendimento)}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
-                        {empreendimento.alugadas} de {empreendimento.unidades} unidades ocupadas
-                      </span>
-                      <span className="font-medium text-foreground">{empreendimento.ocupacao}%</span>
-                    </div>
-                    <Progress value={empreendimento.ocupacao} />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+              empreendimento={empreendimento}
+              index={index}
+            />
           ))}
         </div>
       )}

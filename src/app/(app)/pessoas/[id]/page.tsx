@@ -14,7 +14,13 @@ import { excluirPessoa } from "@/features/pessoas/actions";
 import { obterPessoa } from "@/features/pessoas/queries";
 import { formatDate } from "@/lib/dates";
 import { formatDocumento, formatEndereco, formatPhone, whatsappLink } from "@/lib/format";
-import { ESTADO_CIVIL, PAPEL_CONTRATO, PAPEL_PESSOA, STATUS_CONTRATO, TIPO_PESSOA } from "@/lib/labels";
+import {
+  ESTADO_CIVIL,
+  PAPEL_CONTRATO,
+  PAPEL_PESSOA,
+  STATUS_CONTRATO,
+  TIPO_PESSOA,
+} from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
 import { isAdmin, requireUser } from "@/lib/session";
 
@@ -108,7 +114,9 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Estado civil</p>
-                    <p className="text-sm">{pessoa.estadoCivil ? ESTADO_CIVIL[pessoa.estadoCivil] : "—"}</p>
+                    <p className="text-sm">
+                      {pessoa.estadoCivil ? ESTADO_CIVIL[pessoa.estadoCivil] : "—"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Profissão</p>
@@ -123,7 +131,9 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
                 <div>
                   <p className="text-xs text-muted-foreground">Representante</p>
                   <p className="text-sm">
-                    {pessoa.representanteNome} {pessoa.representanteDocumento && `(${formatDocumento(pessoa.representanteDocumento)})`}
+                    {pessoa.representanteNome}{" "}
+                    {pessoa.representanteDocumento &&
+                      `(${formatDocumento(pessoa.representanteDocumento)})`}
                   </p>
                 </div>
               )}
@@ -138,13 +148,20 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
         </TabsContent>
 
         <TabsContent value="documentos" className="space-y-4">
-          <FileUploader entidade="pessoa" entidadeId={pessoa.id} categoria="DOCUMENTO" titulo="RG, CPF, comprovantes..." />
+          <FileUploader
+            entidade="pessoa"
+            entidadeId={pessoa.id}
+            categoria="DOCUMENTO"
+            titulo="RG, CPF, comprovantes..."
+          />
           <FileList arquivos={pessoa.arquivos} />
         </TabsContent>
 
         <TabsContent value="contratos" className="space-y-3">
           {pessoa.contratos.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nenhum contrato vinculado.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum contrato vinculado.
+            </p>
           ) : (
             pessoa.contratos.map((parte) => {
               const status = STATUS_CONTRATO[parte.contrato.status];

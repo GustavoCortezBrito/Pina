@@ -46,7 +46,9 @@ export function CategoriasDespesa({ categorias }: { categorias: Categoria[] }) {
             <Switch
               checked={categoria.ativo}
               disabled={pending}
-              onCheckedChange={(checked) => run(() => alternarCategoriaDespesa(categoria.id, checked))}
+              onCheckedChange={(checked) =>
+                run(() => alternarCategoriaDespesa(categoria.id, checked))
+              }
             />
           </li>
         ))}

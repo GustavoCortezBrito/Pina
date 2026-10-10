@@ -7,7 +7,14 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog";
 import { ReajusteDialog } from "@/features/contratos/components/reajuste-dialog";
@@ -133,9 +140,13 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   const efetivo = STATUS_COBRANCA[status];
                   return (
                     <TableRow key={cobranca.id}>
-                      <TableCell className="capitalize">{formatDate(cobranca.competencia)}</TableCell>
+                      <TableCell className="capitalize">
+                        {formatDate(cobranca.competencia)}
+                      </TableCell>
                       <TableCell>{formatDate(cobranca.vencimento)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{formatBRL(cobranca.valorTotal)}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatBRL(cobranca.valorTotal)}
+                      </TableCell>
                       <TableCell>
                         <StatusBadge label={efetivo.label} tone={efetivo.tone} />
                       </TableCell>
@@ -161,7 +172,9 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
 
         <TabsContent value="reajustes" className="space-y-3">
           {contrato.reajustes.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nenhum reajuste aplicado ainda.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum reajuste aplicado ainda.
+            </p>
           ) : (
             contrato.reajustes.map((reajuste) => (
               <Card key={reajuste.id}>
@@ -181,7 +194,9 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
 
         <TabsContent value="vistorias" className="space-y-3">
           {contrato.vistorias.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma vistoria registrada.</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhuma vistoria registrada.
+            </p>
           ) : (
             contrato.vistorias.map((vistoria) => (
               <Card key={vistoria.id}>
@@ -189,7 +204,9 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   <p className="font-medium">
                     {TIPO_VISTORIA[vistoria.tipo]} · {formatDate(vistoria.data)}
                   </p>
-                  {vistoria.observacoes && <p className="text-muted-foreground">{vistoria.observacoes}</p>}
+                  {vistoria.observacoes && (
+                    <p className="text-muted-foreground">{vistoria.observacoes}</p>
+                  )}
                 </CardContent>
               </Card>
             ))
@@ -197,7 +214,10 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
         </TabsContent>
 
         <TabsContent value="arquivos">
-          <FileList arquivos={contrato.arquivos} vazio="Nenhum arquivo anexado (contrato assinado, etc.)." />
+          <FileList
+            arquivos={contrato.arquivos}
+            vazio="Nenhum arquivo anexado (contrato assinado, etc.)."
+          />
         </TabsContent>
       </Tabs>
     </div>

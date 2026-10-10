@@ -15,7 +15,11 @@ const config = {
   despesa: { label: "Despesa", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-export function RevenueChart({ dados }: { dados: Array<{ mes: string; receita: number; despesa: number }> }) {
+export function RevenueChart({
+  dados,
+}: {
+  dados: Array<{ mes: string; receita: number; despesa: number }>;
+}) {
   return (
     <ChartContainer config={config} className="h-72 w-full">
       <BarChart data={dados} margin={{ left: -16 }}>

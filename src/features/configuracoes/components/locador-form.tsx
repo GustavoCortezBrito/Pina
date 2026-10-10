@@ -30,10 +30,19 @@ export function LocadorForm({ valores }: { valores: Locador }) {
         <FormField control={form.control} name="documento" label="CPF/CNPJ">
           {(field) => <Input {...field} id="locador-documento" />}
         </FormField>
-        <FormField control={form.control} name="endereco" label="Endereço" className="sm:col-span-2">
+        <FormField
+          control={form.control}
+          name="endereco"
+          label="Endereço"
+          className="sm:col-span-2"
+        >
           {(field) => <Input {...field} id="locador-endereco" />}
         </FormField>
-        <FormField control={form.control} name="cidade" label="Cidade/UF (usada no foro do contrato)">
+        <FormField
+          control={form.control}
+          name="cidade"
+          label="Cidade/UF (usada no foro do contrato)"
+        >
           {(field) => <Input {...field} id="locador-cidade" />}
         </FormField>
         <FormField control={form.control} name="telefone" label="Telefone">

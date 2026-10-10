@@ -18,7 +18,10 @@ export async function definirCapa(arquivoId: string) {
       if (!arquivo?.imovelId) throw new AppError("Só é possível definir capa em fotos de imóveis.");
 
       await db.$transaction([
-        db.arquivo.updateMany({ where: { imovelId: arquivo.imovelId, capa: true }, data: { capa: false } }),
+        db.arquivo.updateMany({
+          where: { imovelId: arquivo.imovelId, capa: true },
+          data: { capa: false },
+        }),
         db.arquivo.update({ where: { id }, data: { capa: true } }),
       ]);
     },

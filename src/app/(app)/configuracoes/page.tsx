@@ -23,7 +23,10 @@ export default async function ConfiguracoesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Configurações" description="Dados do locador, parâmetros financeiros e modelos." />
+      <PageHeader
+        title="Configurações"
+        description="Dados do locador, parâmetros financeiros e modelos."
+      />
 
       <Tabs defaultValue="locador">
         <TabsList>

@@ -46,7 +46,12 @@ export function Pagination({
               </span>
             )}
           </Button>
-          <Button variant="outline" size="sm" asChild={page < pageCount} disabled={page >= pageCount}>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild={page < pageCount}
+            disabled={page >= pageCount}
+          >
             {page < pageCount ? (
               <Link href={href(page + 1)} scroll={false}>
                 Próxima <ChevronRightIcon />

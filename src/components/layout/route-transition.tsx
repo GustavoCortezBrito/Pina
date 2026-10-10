@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 export function RouteTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   return (
-    <div key={pathname} className="animate-in fade-in slide-in-from-bottom-1 duration-300 ease-out">
+    <div key={pathname} className="animate-in duration-300 ease-out fade-in slide-in-from-bottom-1">
       {children}
     </div>
   );

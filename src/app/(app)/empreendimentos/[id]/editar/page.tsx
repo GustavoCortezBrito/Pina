@@ -6,7 +6,9 @@ import { obterEmpreendimento } from "@/features/empreendimentos/queries";
 
 export const metadata: Metadata = { title: "Editar empreendimento" };
 
-export default async function EditarEmpreendimentoPage(props: PageProps<"/empreendimentos/[id]/editar">) {
+export default async function EditarEmpreendimentoPage(
+  props: PageProps<"/empreendimentos/[id]/editar">,
+) {
   const { id } = await props.params;
   const empreendimento = await obterEmpreendimento(id);
   if (!empreendimento) notFound();

@@ -43,7 +43,10 @@ export function statusEfetivo(
   hoje: Date,
   feriados?: string[],
 ): StatusCobrancaEfetivo {
-  if ((status === "PENDENTE" || status === "PAGO_PARCIAL") && proximoDiaUtil(vencimento, feriados) < hoje) {
+  if (
+    (status === "PENDENTE" || status === "PAGO_PARCIAL") &&
+    proximoDiaUtil(vencimento, feriados) < hoje
+  ) {
     return "ATRASADO";
   }
   return status;
