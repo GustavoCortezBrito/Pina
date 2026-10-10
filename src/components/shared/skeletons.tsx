@@ -54,6 +54,31 @@ export function CardGridSkeleton({ count = 8 }: { count?: number }) {
   );
 }
 
+/** Para os cards com ícone no topo (contratos, cobranças, despesas, manutenções). */
+export function InfoCardGridSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <Card key={i}>
+          <CardContent className="space-y-3 p-5">
+            <div className="flex items-center justify-between">
+              <Skeleton className="size-11 rounded-full" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+            <div className="space-y-2 border-t pt-3">
+              <Skeleton className="h-6 w-24" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export function TableSkeleton({ rows = 8, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="overflow-hidden rounded-lg border">

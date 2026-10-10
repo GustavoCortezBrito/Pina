@@ -1,4 +1,5 @@
-import { FileTextIcon } from "lucide-react";
+import { FileTextIcon, HandCoinsIcon } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FileList } from "@/components/shared/file-list";
@@ -122,7 +123,14 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
           <TabsTrigger value="arquivos">Arquivos ({contrato.arquivos.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="cobrancas">
+        <TabsContent value="cobrancas" className="space-y-3">
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/financeiro/cobrancas/${contrato.id}`}>
+                <HandCoinsIcon /> Receber pagamentos
+              </Link>
+            </Button>
+          </div>
           <div className="overflow-hidden rounded-lg border">
             <Table>
               <TableHeader>

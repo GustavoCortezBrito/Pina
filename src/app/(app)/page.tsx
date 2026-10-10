@@ -106,7 +106,7 @@ export default async function DashboardPage() {
               atrasadas.map((item) => (
                 <Link
                   key={item.id}
-                  href="/financeiro/cobrancas"
+                  href={`/financeiro/cobrancas/${item.contratoId}`}
                   className="flex items-center justify-between gap-2 border-t px-6 py-3 text-sm transition-colors first:border-t-0 hover:bg-muted/40"
                 >
                   <div>
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
               vencendoSemana.map((item) => (
                 <Link
                   key={item.id}
-                  href="/financeiro/cobrancas"
+                  href={`/financeiro/cobrancas/${item.contratoId}`}
                   className="flex items-center justify-between gap-2 border-t px-6 py-3 text-sm transition-colors first:border-t-0 hover:bg-muted/40"
                 >
                   <div>

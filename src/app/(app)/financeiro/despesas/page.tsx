@@ -127,10 +127,8 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
               </Card>
             ))}
           </div>
-          <div className="flex items-center justify-between">
-            <Pagination page={page} pageCount={pageCount} total={total} label="despesas" />
-            <p className="text-sm font-medium">Total: {formatBRL(somaValor)}</p>
-          </div>
+          <p className="text-right text-sm font-medium">Total do período: {formatBRL(somaValor)}</p>
+          <Pagination page={page} pageCount={pageCount} total={total} label="despesas" />
         </>
       )}
     </div>

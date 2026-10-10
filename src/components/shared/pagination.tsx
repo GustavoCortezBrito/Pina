@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function Pagination({
@@ -28,42 +28,50 @@ export function Pagination({
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-      <span>
-        {total} {label}
-        {pageCount > 1 && ` · página ${page} de ${pageCount}`}
-      </span>
+    <div className="flex flex-col items-center gap-2 pt-2">
       {pageCount > 1 && (
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild={page > 1} disabled={page <= 1}>
-            {page > 1 ? (
-              <Link href={href(page - 1)} scroll={false}>
-                <ChevronLeftIcon /> Anterior
-              </Link>
-            ) : (
-              <span>
-                <ChevronLeftIcon /> Anterior
-              </span>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            asChild={page < pageCount}
-            disabled={page >= pageCount}
-          >
-            {page < pageCount ? (
-              <Link href={href(page + 1)} scroll={false}>
-                Próxima <ChevronRightIcon />
-              </Link>
-            ) : (
-              <span>
-                Próxima <ChevronRightIcon />
-              </span>
-            )}
-          </Button>
+        <div className="flex items-center gap-3">
+          <PagerButton href={href(page - 1)} disabled={page <= 1} label="Página anterior">
+            <ChevronLeftIcon />
+          </PagerButton>
+          <span className="min-w-16 text-center text-sm font-medium tabular-nums">
+            {page} <span className="font-normal text-muted-foreground">de {pageCount}</span>
+          </span>
+          <PagerButton href={href(page + 1)} disabled={page >= pageCount} label="Próxima página">
+            <ChevronRightIcon />
+          </PagerButton>
         </div>
       )}
+      <p className="text-xs text-muted-foreground">
+        {total} {label}
+      </p>
     </div>
+  );
+}
+
+function PagerButton({
+  href,
+  disabled,
+  label,
+  children,
+}: {
+  href: string;
+  disabled: boolean;
+  label: string;
+  children: React.ReactNode;
+}) {
+  if (disabled) {
+    return (
+      <Button variant="outline" size="icon" disabled aria-label={label}>
+        {children}
+      </Button>
+    );
+  }
+  return (
+    <Button variant="outline" size="icon" asChild aria-label={label}>
+      <Link href={href} scroll={false}>
+        {children}
+      </Link>
+    </Button>
   );
 }

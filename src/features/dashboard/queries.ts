@@ -59,6 +59,7 @@ export async function cobrancasAtrasadas() {
       pagamentos: { select: { valorPrincipal: true } },
       contrato: {
         select: {
+          id: true,
           imovel: { select: { codigo: true } },
           partes: { where: { papel: "LOCATARIO" }, take: 1, select: { pessoa: { select: { nome: true } } } },
         },
@@ -68,6 +69,7 @@ export async function cobrancasAtrasadas() {
 
   return cobrancas.map((c) => ({
     id: c.id,
+    contratoId: c.contrato.id,
     imovel: c.contrato.imovel.codigo,
     inquilino: c.contrato.partes[0]?.pessoa.nome ?? "—",
     diasAtraso: diffDays(hoje, c.vencimento),
@@ -88,6 +90,7 @@ export async function cobrancasVencendoEmBreve(dias = 7) {
       pagamentos: { select: { valorPrincipal: true } },
       contrato: {
         select: {
+          id: true,
           imovel: { select: { codigo: true } },
           partes: { where: { papel: "LOCATARIO" }, take: 1, select: { pessoa: { select: { nome: true } } } },
         },
@@ -97,6 +100,7 @@ export async function cobrancasVencendoEmBreve(dias = 7) {
 
   return cobrancas.map((c) => ({
     id: c.id,
+    contratoId: c.contrato.id,
     imovel: c.contrato.imovel.codigo,
     inquilino: c.contrato.partes[0]?.pessoa.nome ?? "—",
     vencimento: c.vencimento,

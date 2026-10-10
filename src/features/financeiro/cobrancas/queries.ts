@@ -10,7 +10,7 @@ export const COBRANCAS_POR_PAGINA = 20;
 export type FiltrosCobranca = {
   mes?: string;
   status?: StatusCobrancaEfetivo;
-  imovelId?: string;
+  contratoId?: string;
   page?: number;
 };
 
@@ -21,7 +21,7 @@ export async function listarCobrancas(filtros: FiltrosCobranca) {
 
   const where: Prisma.CobrancaWhereInput = {
     competencia: mes ?? undefined,
-    contrato: filtros.imovelId ? { imovelId: filtros.imovelId } : undefined,
+    contratoId: filtros.contratoId,
     status:
       filtros.status === "ATRASADO"
         ? { in: ["PENDENTE", "PAGO_PARCIAL"] as StatusCobranca[] }
@@ -69,3 +69,84 @@ export async function listarCobrancas(filtros: FiltrosCobranca) {
 }
 
 export type CobrancaItem = Awaited<ReturnType<typeof listarCobrancas>>["itens"][number];
+
+export type ResumoContratoCobranca = {
+  contratoId: string;
+  imovel: { id: string; codigo: string; titulo: string };
+  inquilino: string;
+  statusContrato: string;
+  pendentesCount: number;
+  atrasadasCount: number;
+  saldoAberto: number;
+  proximoVencimento: Date | null;
+};
+
+/**
+ * Um card por contrato (não por cobrança): junta as parcelas de cada imóvel para a
+ * lista principal não ficar poluída com todas as competências soltas (ver RF-50/RF-70).
+ */
+export async function resumoCobrancasPorContrato(q?: string): Promise<ResumoContratoCobranca[]> {
+  const hoje = today();
+  const termo = q?.trim();
+
+  const contratos = await db.contrato.findMany({
+    where: {
+      OR: [{ status: "ATIVO" }, { cobrancas: { some: { status: { in: ["PENDENTE", "PAGO_PARCIAL"] } } } }],
+      ...(termo
+        ? {
+            OR: [
+              { imovel: { codigo: { contains: termo, mode: "insensitive" } } },
+              { imovel: { titulo: { contains: termo, mode: "insensitive" } } },
+              { partes: { some: { pessoa: { nome: { contains: termo, mode: "insensitive" } } } } },
+            ],
+          }
+        : {}),
+    },
+    include: {
+      imovel: { select: { id: true, codigo: true, titulo: true } },
+      partes: {
+        where: { papel: "LOCATARIO" },
+        orderBy: { principal: "desc" },
+        take: 1,
+        select: { pessoa: { select: { nome: true } } },
+      },
+      cobrancas: {
+        where: { status: { in: ["PENDENTE", "PAGO_PARCIAL"] } },
+        select: { valorTotal: true, vencimento: true, pagamentos: { select: { valorPrincipal: true } } },
+      },
+    },
+  });
+
+  const resumos = contratos.map((contrato) => {
+    const pendentes = contrato.cobrancas;
+    const saldoAberto = pendentes.reduce((soma, cb) => {
+      const pago = cb.pagamentos.reduce((s, p) => s + p.valorPrincipal, 0);
+      return soma + (cb.valorTotal - pago);
+    }, 0);
+    const atrasadasCount = pendentes.filter((cb) => cb.vencimento < hoje).length;
+    const proximoVencimento = pendentes.length
+      ? pendentes.reduce((min, cb) => (cb.vencimento < min ? cb.vencimento : min), pendentes[0].vencimento)
+      : null;
+
+    return {
+      contratoId: contrato.id,
+      imovel: contrato.imovel,
+      inquilino: contrato.partes[0]?.pessoa.nome ?? "—",
+      statusContrato: contrato.status,
+      pendentesCount: pendentes.length,
+      atrasadasCount,
+      saldoAberto,
+      proximoVencimento,
+    };
+  });
+
+  return resumos.sort((a, b) => {
+    if (a.atrasadasCount !== b.atrasadasCount) return b.atrasadasCount - a.atrasadasCount;
+    if (a.proximoVencimento && b.proximoVencimento) {
+      return a.proximoVencimento.getTime() - b.proximoVencimento.getTime();
+    }
+    if (a.proximoVencimento) return -1;
+    if (b.proximoVencimento) return 1;
+    return a.imovel.codigo.localeCompare(b.imovel.codigo);
+  });
+}
