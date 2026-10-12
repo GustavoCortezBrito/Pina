@@ -76,7 +76,7 @@ export function ReceberDialog({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <CheckCircle2Icon className="size-5 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2Icon className="size-5 text-success" />
                 Pagamento registrado
               </DialogTitle>
               <DialogDescription>O recibo já pode ser baixado ou enviado ao inquilino.</DialogDescription>

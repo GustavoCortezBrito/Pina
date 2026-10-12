@@ -1,37 +1,39 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { addMonths, startOfMonth, toISOMonth, today } from "@/lib/dates";
+import { addMonths, today, toISOMonth } from "@/lib/dates";
+import { resolverPeriodo, type PeriodoResolvido } from "./periodos";
+
+export { PERIODOS_GRAFICO, resolverPeriodo } from "./periodos";
+export type { ParamsPeriodo, PeriodoResolvido } from "./periodos";
 
 export type PontoReceitaDespesa = { mes: string; mesLabel: string; receita: number; despesa: number };
 
-/** Receita (pagamentos) x despesa dos últimos `meses` meses, incluindo o atual. */
-export async function receitaDespesaMensal(meses = 12): Promise<PontoReceitaDespesa[]> {
-  const inicio = startOfMonth(addMonths(today(), -(meses - 1)));
+/** Receita (pagamentos) x despesa por mês no período escolhido. */
+export async function receitaDespesaPeriodo(periodo: PeriodoResolvido): Promise<PontoReceitaDespesa[]> {
+  const { inicio, meses } = periodo;
+  const limite = addMonths(inicio, meses);
 
   const [pagamentos, despesas] = await Promise.all([
     db.pagamento.findMany({
-      where: { dataPagamento: { gte: inicio } },
+      where: { dataPagamento: { gte: inicio, lt: limite } },
       select: { dataPagamento: true, valorPago: true },
     }),
     db.despesa.findMany({
-      where: { data: { gte: inicio } },
+      where: { data: { gte: inicio, lt: limite } },
       select: { data: true, valor: true },
     }),
   ]);
 
   const porMes = new Map<string, { receita: number; despesa: number }>();
   for (let i = 0; i < meses; i++) {
-    const mes = addMonths(inicio, i);
-    porMes.set(toISOMonth(mes), { receita: 0, despesa: 0 });
+    porMes.set(toISOMonth(addMonths(inicio, i)), { receita: 0, despesa: 0 });
   }
   for (const pagamento of pagamentos) {
-    const chave = toISOMonth(pagamento.dataPagamento);
-    const bucket = porMes.get(chave);
+    const bucket = porMes.get(toISOMonth(pagamento.dataPagamento));
     if (bucket) bucket.receita += pagamento.valorPago;
   }
   for (const despesa of despesas) {
-    const chave = toISOMonth(despesa.data);
-    const bucket = porMes.get(chave);
+    const bucket = porMes.get(toISOMonth(despesa.data));
     if (bucket) bucket.despesa += despesa.valor;
   }
 
@@ -41,6 +43,11 @@ export async function receitaDespesaMensal(meses = 12): Promise<PontoReceitaDesp
     mesLabel: fmt.format(new Date(`${mes}-01T00:00:00Z`)).replace(".", ""),
     ...valores,
   }));
+}
+
+/** Atalho: últimos N meses. */
+export async function receitaDespesaMensal(meses = 12) {
+  return receitaDespesaPeriodo(resolverPeriodo({ periodo: String(meses) }));
 }
 
 export type ResultadoImovel = {

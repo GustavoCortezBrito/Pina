@@ -7,7 +7,7 @@ import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { parseISODate } from "@/lib/dates";
 import { AppError } from "@/lib/errors";
-import { requireUser } from "@/lib/session";
+import { requireAccess } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 
 const registrarPagamentoSchema = z.object({
@@ -20,7 +20,7 @@ const registrarPagamentoSchema = z.object({
 export async function registrarPagamento(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("cobrancas");
       const dados = registrarPagamentoSchema.parse(input);
       const dataPagamento = parseISODate(dados.dataPagamento);
       if (!dataPagamento) throw new AppError("Data de pagamento inválida.");

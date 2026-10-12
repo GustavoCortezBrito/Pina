@@ -12,17 +12,13 @@ import {
 } from "@/components/ui/empty";
 import { RevenueChart } from "@/features/dashboard/components/revenue-chart";
 import { opcoesImoveis } from "@/features/imoveis/queries";
-import { receitaDespesaMensal, resultadoPorImovel } from "@/features/relatorios/queries";
+import { ExportarMenu } from "@/features/relatorios/components/exportar-menu";
+import { PeriodoFilter } from "@/features/relatorios/components/periodo-filter";
+import { receitaDespesaPeriodo, resolverPeriodo, resultadoPorImovel } from "@/features/relatorios/queries";
 import { today } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Relatórios" };
-
-const PERIODOS = [
-  { value: "6", label: "Últimos 6 meses" },
-  { value: "12", label: "Últimos 12 meses" },
-  { value: "24", label: "Últimos 24 meses" },
-];
 
 function opcoesAnos() {
   const anoAtual = today().getUTCFullYear();
@@ -36,12 +32,12 @@ export default async function RelatoriosPage(props: PageProps<"/relatorios">) {
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
 
-  const periodo = Number(lerParam("periodo") ?? 12);
+  const periodo = resolverPeriodo({ periodo: lerParam("periodo"), de: lerParam("de"), ate: lerParam("ate") });
   const ano = Number(lerParam("ano") ?? today().getUTCFullYear());
   const imovelId = lerParam("imovel");
 
   const [serieMensal, resultadoImoveis, imoveis] = await Promise.all([
-    receitaDespesaMensal(periodo),
+    receitaDespesaPeriodo(periodo),
     resultadoPorImovel(ano, imovelId),
     opcoesImoveis(),
   ]);
@@ -49,17 +45,21 @@ export default async function RelatoriosPage(props: PageProps<"/relatorios">) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Relatórios" description="Receita, despesa e resultado por imóvel." />
+      <PageHeader
+        title="Relatórios"
+        description="Receita, despesa e resultado por imóvel."
+        actions={<ExportarMenu />}
+      />
 
       <FilterBar>
-        <FilterSelect param="periodo" placeholder="Período" options={PERIODOS} allLabel="Últimos 12 meses" />
+        <PeriodoFilter />
         <FilterSelect param="ano" placeholder="Ano" options={opcoesAnos()} allLabel={String(today().getUTCFullYear())} />
         <FilterSelect param="imovel" placeholder="Imóvel" options={imoveis} allLabel="Todos os imóveis" />
       </FilterBar>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Receita × despesa — últimos {periodo} meses</CardTitle>
+          <CardTitle className="text-base">Receita × despesa — {periodo.rotulo}</CardTitle>
         </CardHeader>
         <CardContent>
           <RevenueChart dados={dadosGrafico} />
@@ -79,7 +79,7 @@ export default async function RelatoriosPage(props: PageProps<"/relatorios">) {
             resultadoImoveis.map((item) => (
               <div
                 key={item.imovelId}
-                className="flex flex-wrap items-center justify-between gap-2 border-t px-6 py-3 text-sm first:border-t-0"
+                className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3 text-sm transition-colors first:border-t-0 hover:bg-muted/50 sm:px-6"
               >
                 <span className="font-medium">
                   {item.codigo} · {item.titulo}
@@ -90,8 +90,8 @@ export default async function RelatoriosPage(props: PageProps<"/relatorios">) {
                 <span
                   className={
                     item.receita - item.despesa >= 0
-                      ? "font-semibold tabular-nums text-emerald-600 dark:text-emerald-400"
-                      : "font-semibold tabular-nums text-red-600 dark:text-red-400"
+                      ? "rounded-full bg-success/12 px-2.5 py-0.5 font-bold tabular-nums text-success"
+                      : "rounded-full bg-danger/12 px-2.5 py-0.5 font-bold tabular-nums text-danger"
                   }
                 >
                   {formatBRL(item.receita - item.despesa)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeftIcon, ArrowRightIcon, PlusIcon, SendIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, PlusIcon, SendIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
@@ -121,30 +121,46 @@ export function ContratoWizard({
 
   return (
     <div className="space-y-6">
-      <ol className="flex items-center gap-2 text-sm">
-        {ETAPAS.map((nome, index) => (
-          <li key={nome} className="flex items-center gap-2">
-            <span
-              className={cn(
-                "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-                index === etapa
-                  ? "bg-primary text-primary-foreground"
-                  : index < etapa
-                    ? "bg-primary/15 text-primary"
-                    : "bg-muted text-muted-foreground",
-              )}
-            >
-              {index + 1}
-            </span>
-            <span className={index === etapa ? "font-medium" : "text-muted-foreground"}>
-              {nome}
-            </span>
-            {index < ETAPAS.length - 1 && <span className="mx-1 h-px w-6 bg-border" />}
-          </li>
-        ))}
-      </ol>
+      <div className="space-y-2">
+        <ol className="grid grid-cols-4 gap-2 text-sm">
+          {ETAPAS.map((nome, index) => (
+            <li key={nome} className="space-y-2">
+              <span className="relative block h-1.5 overflow-hidden rounded-full bg-muted">
+                <span
+                  className={cn(
+                    "absolute inset-0 origin-left rounded-full bg-gradient-to-r from-primary to-brand-deep transition-transform duration-500",
+                    index <= etapa ? "scale-x-100" : "scale-x-0",
+                  )}
+                />
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300",
+                    index === etapa
+                      ? "scale-110 bg-primary text-primary-foreground shadow-md shadow-primary/30"
+                      : index < etapa
+                        ? "bg-primary/15 text-primary-ink"
+                        : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {index < etapa ? <CheckIcon className="size-3.5" /> : index + 1}
+                </span>
+                <span
+                  className={cn(
+                    "truncate",
+                    index === etapa ? "font-semibold" : "hidden text-muted-foreground sm:inline",
+                  )}
+                >
+                  {nome}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
 
-      <Card>
+      <Card key={etapa} className="animate-fade-up">
         <CardContent className="space-y-6">
           {etapa === 0 && (
             <FieldGroup className="grid gap-5 sm:grid-cols-2">

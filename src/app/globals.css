@@ -8,6 +8,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-primary-ink: var(--primary-ink);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-danger: var(--danger);
+  --color-surface-strong: var(--surface-strong);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
@@ -47,80 +53,166 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-grow-x: grow-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-grow-y: grow-y 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 5s ease-in-out infinite;
 }
 
-/* Cores da marca Pina's Empreendimentos: laranja da logo, escurecido no tema claro
-   para o texto branco dos botões passar em contraste (4,94:1). A paleta dos
-   gráficos foi validada para daltonismo nos dois temas. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+/* Paleta da marca Pina's Empreendimentos: laranja do bordado da logo (#E8862F) sobre preto
+   e branco quentes. Cores de apoio só com significado: verde = ok/pago/ativo, azul = em
+   andamento/informação, vermelho = atraso/erro, laranja = atenção/destaque. Todas têm uma
+   versão para texto no tema claro (mais escura) e outra no escuro (mais clara). */
 :root {
-  --background: oklch(0.968 0.006 70);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.972 0.005 75);
+  --foreground: oklch(0.19 0.012 50);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.19 0.012 50);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --brand: oklch(0.67 0.17 41);
-  --primary: oklch(0.67 0.17 41);
-  --primary-foreground: oklch(0.22 0.03 45);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.43 0 0);
-  --accent: oklch(0.97 0.012 60);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0.004 70);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.67 0.17 41);
-  --chart-1: oklch(0.671 0.175 40.6);
-  --chart-2: oklch(0.575 0.163 255.5);
-  --chart-3: oklch(0.669 0.141 162.1);
-  --chart-4: oklch(0.764 0.161 75.1);
-  --chart-5: oklch(0.433 0.167 283.6);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0.004 60);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.67 0.17 41);
-  --sidebar-primary-foreground: oklch(0.22 0.03 45);
-  --sidebar-accent: oklch(0.96 0.014 60);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.67 0.17 41);
+  --popover-foreground: oklch(0.19 0.012 50);
+  --surface-strong: oklch(0.17 0.01 50);
+  --brand: oklch(0.712 0.153 57);
+  --brand-deep: oklch(0.6 0.165 45);
+  --primary: oklch(0.712 0.153 57);
+  --primary-ink: oklch(0.52 0.135 50);
+  --primary-foreground: oklch(0.17 0.02 50);
+  --success: oklch(0.5 0.13 155);
+  --info: oklch(0.5 0.15 255);
+  --danger: oklch(0.54 0.2 27);
+  --secondary: oklch(0.95 0.006 75);
+  --secondary-foreground: oklch(0.22 0.01 50);
+  --muted: oklch(0.955 0.006 75);
+  --muted-foreground: oklch(0.47 0.012 60);
+  --accent: oklch(0.96 0.03 65);
+  --accent-foreground: oklch(0.22 0.01 50);
+  --destructive: oklch(0.54 0.2 27);
+  --border: oklch(0.9 0.008 75);
+  --input: oklch(0.87 0.01 75);
+  --ring: oklch(0.712 0.153 57);
+  --chart-1: oklch(0.712 0.153 57);
+  --chart-2: oklch(0.3 0.012 50);
+  --chart-3: oklch(0.5 0.13 155);
+  --chart-4: oklch(0.5 0.15 255);
+  --chart-5: oklch(0.54 0.2 27);
+  --radius: 0.7rem;
+  --sidebar: oklch(0.17 0.01 50);
+  --sidebar-foreground: oklch(0.92 0.006 70);
+  --sidebar-primary: oklch(0.712 0.153 57);
+  --sidebar-primary-foreground: oklch(0.17 0.02 50);
+  --sidebar-accent: oklch(0.25 0.012 50);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.712 0.153 57);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --brand: oklch(0.72 0.16 55);
-  --primary: oklch(0.72 0.16 55);
-  --primary-foreground: oklch(0.2 0.03 50);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.285 0.012 60);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: oklch(0.145 0.006 50);
+  --foreground: oklch(0.955 0.005 70);
+  --card: oklch(0.2 0.008 50);
+  --card-foreground: oklch(0.955 0.005 70);
+  --popover: oklch(0.22 0.008 50);
+  --popover-foreground: oklch(0.955 0.005 70);
+  --surface-strong: oklch(0.105 0.006 50);
+  --brand: oklch(0.74 0.15 58);
+  --brand-deep: oklch(0.64 0.16 46);
+  --primary: oklch(0.74 0.15 58);
+  --primary-ink: oklch(0.79 0.14 62);
+  --primary-foreground: oklch(0.17 0.02 50);
+  --success: oklch(0.78 0.15 158);
+  --info: oklch(0.76 0.12 245);
+  --danger: oklch(0.72 0.17 24);
+  --secondary: oklch(0.26 0.008 50);
+  --secondary-foreground: oklch(0.955 0.005 70);
+  --muted: oklch(0.255 0.008 50);
+  --muted-foreground: oklch(0.72 0.01 70);
+  --accent: oklch(0.28 0.035 58);
+  --accent-foreground: oklch(0.955 0.005 70);
+  --destructive: oklch(0.72 0.17 24);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.72 0.16 55);
-  --chart-1: oklch(0.622 0.173 40.1);
-  --chart-2: oklch(0.622 0.161 255.1);
-  --chart-3: oklch(0.621 0.128 163.1);
-  --chart-4: oklch(0.67 0.143 73.2);
-  --chart-5: oklch(0.67 0.145 286.8);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.72 0.16 55);
-  --sidebar-primary-foreground: oklch(0.2 0.03 50);
-  --sidebar-accent: oklch(0.285 0.012 60);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.72 0.16 55);
+  --ring: oklch(0.74 0.15 58);
+  --chart-1: oklch(0.74 0.15 58);
+  --chart-2: oklch(0.88 0.005 70);
+  --chart-3: oklch(0.78 0.15 158);
+  --chart-4: oklch(0.76 0.12 245);
+  --chart-5: oklch(0.72 0.17 24);
+  --sidebar: oklch(0.11 0.006 50);
+  --sidebar-foreground: oklch(0.92 0.006 70);
+  --sidebar-primary: oklch(0.74 0.15 58);
+  --sidebar-primary-foreground: oklch(0.17 0.02 50);
+  --sidebar-accent: oklch(0.2 0.008 50);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.74 0.15 58);
 }
 
 @layer base {
@@ -128,11 +220,49 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    overflow-x: clip;
   }
   /* Público de 40–50 anos: fontes maiores nos componentes, sem inflar o layout. */
   html {
     @apply font-sans;
     font-size: 100%;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent) transparent;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 35%, transparent);
+  }
+}
+
+@layer components {
+  /* Superfície escura da marca (banner do painel, login): preto quente com brilho laranja. */
+  .surface-brand {
+    background:
+      radial-gradient(120% 140% at 100% 0%, color-mix(in oklch, var(--brand) 22%, transparent) 0%, transparent 55%),
+      radial-gradient(90% 120% at 0% 100%, color-mix(in oklch, var(--brand-deep) 14%, transparent) 0%, transparent 60%),
+      var(--surface-strong);
+    color: oklch(0.97 0.005 70);
+  }
+  .text-gradient-brand {
+    background: linear-gradient(100deg, var(--brand) 10%, var(--brand-deep) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

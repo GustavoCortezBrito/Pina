@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { runAction } from "@/lib/action";
-import { audit } from "@/lib/audit";
+import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
@@ -45,12 +45,15 @@ export async function atualizarEmpreendimento(id: string, input: unknown) {
     async () => {
       const user = await requireUser();
       const dados = empreendimentoSchema.parse(input);
-      await db.empreendimento.update({ where: { id }, data: paraBanco(dados) });
+      const antes = await db.empreendimento.findUnique({ where: { id } });
+      const novos = paraBanco(dados);
+      await db.empreendimento.update({ where: { id }, data: novos });
       await audit({
         usuarioId: user.id,
         acao: "UPDATE",
         entidade: "Empreendimento",
         entidadeId: id,
+        dados: antes ? diffCampos(antes, novos) : undefined,
       });
       return { id };
     },

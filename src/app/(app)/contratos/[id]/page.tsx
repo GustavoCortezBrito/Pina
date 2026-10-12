@@ -1,4 +1,13 @@
-import { FileTextIcon, HandCoinsIcon } from "lucide-react";
+import {
+  BanknoteIcon,
+  CalendarClockIcon,
+  CalendarRangeIcon,
+  FileTextIcon,
+  HandCoinsIcon,
+  ShieldCheckIcon,
+  TrendingUpIcon,
+  UserIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -22,7 +31,7 @@ import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog"
 import { ReajusteDialog } from "@/features/contratos/components/reajuste-dialog";
 import { obterContrato } from "@/features/contratos/queries";
 import { statusEfetivo } from "@/features/financeiro/services/encargos";
-import { formatDate } from "@/lib/dates";
+import { formatDate, formatMonth } from "@/lib/dates";
 import { formatNumeroContrato } from "@/lib/format";
 import {
   FINALIDADE,
@@ -35,6 +44,7 @@ import {
 } from "@/lib/labels";
 import { formatBRL, sum } from "@/lib/money";
 import { today } from "@/lib/dates";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Contrato" };
 
@@ -94,34 +104,45 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Período</p>
-          <p className="text-sm font-medium">
-            {formatDate(contrato.dataInicio)} – {formatDate(contrato.dataFim)}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Aluguel</p>
-          <p className="text-sm font-medium">{formatBRL(contrato.valorAluguel)}/mês</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Vencimento</p>
-          <p className="text-sm font-medium">Dia {contrato.diaVencimento}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">Reajuste</p>
-          <p className="text-sm font-medium">{INDICE_REAJUSTE[contrato.indiceReajuste]}</p>
-        </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          { icon: CalendarRangeIcon, rotulo: "Período", valor: `${formatDate(contrato.dataInicio)} – ${formatDate(contrato.dataFim)}` },
+          { icon: BanknoteIcon, rotulo: "Aluguel", valor: `${formatBRL(contrato.valorAluguel)}/mês`, destaque: true },
+          { icon: CalendarClockIcon, rotulo: "Vencimento", valor: `Todo dia ${contrato.diaVencimento}` },
+          { icon: TrendingUpIcon, rotulo: "Reajuste", valor: INDICE_REAJUSTE[contrato.indiceReajuste] },
+        ].map(({ icon: Icon, rotulo, valor, destaque }, idx) => (
+          <Card
+            key={rotulo}
+            className="animate-fade-up flex-row items-center gap-3 p-3 sm:p-4"
+            style={{ animationDelay: `${idx * 50}ms` }}
+          >
+            <span className="hidden size-9 shrink-0 items-center justify-center rounded-xl bg-primary/14 text-primary-ink sm:flex">
+              <Icon className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">{rotulo}</p>
+              <p className={cn("text-sm leading-snug font-semibold break-words", destaque && "text-primary-ink")}>{valor}</p>
+            </div>
+          </Card>
+        ))}
       </div>
 
-      <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap gap-2">
         {contrato.partes.map((parte) => (
-          <Badge key={parte.id} variant="secondary">
-            {PAPEL_CONTRATO[parte.papel]}: {parte.pessoa.nome}
+          <Badge
+            key={parte.id}
+            variant="outline"
+            className={cn(
+              "h-7 gap-1.5 bg-card px-3",
+              parte.papel === "LOCATARIO" && "border-primary/40 bg-primary/10 text-primary-ink",
+            )}
+          >
+            <UserIcon /> {PAPEL_CONTRATO[parte.papel]}: <span className="font-bold">{parte.pessoa.nome}</span>
           </Badge>
         ))}
-        <Badge variant="outline">{TIPO_GARANTIA[contrato.garantia]}</Badge>
+        <Badge variant="outline" className="h-7 gap-1.5 bg-card px-3">
+          <ShieldCheckIcon /> Garantia: {TIPO_GARANTIA[contrato.garantia]}
+        </Badge>
       </div>
 
       <Tabs defaultValue="cobrancas">
@@ -140,12 +161,12 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
               </Link>
             </Button>
           </div>
-          <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Competência</TableHead>
-                  <TableHead>Vencimento</TableHead>
+                  <TableHead className="hidden sm:table-cell">Vencimento</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10" />
@@ -157,10 +178,13 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   const efetivo = STATUS_COBRANCA[status];
                   return (
                     <TableRow key={cobranca.id}>
-                      <TableCell className="capitalize">
-                        {formatDate(cobranca.competencia)}
+                      <TableCell className="font-medium capitalize">
+                        {formatMonth(cobranca.competencia)}
+                        <span className="block text-xs font-normal text-muted-foreground normal-case sm:hidden">
+                          vence {formatDate(cobranca.vencimento)}
+                        </span>
                       </TableCell>
-                      <TableCell>{formatDate(cobranca.vencimento)}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDate(cobranca.vencimento)}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatBRL(cobranca.valorTotal)}
                       </TableCell>

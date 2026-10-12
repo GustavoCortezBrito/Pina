@@ -17,7 +17,10 @@ export async function listarManutencoes(filtros: FiltrosManutencao = {}) {
   const manutencoes = await db.manutencao.findMany({
     where,
     orderBy: { abertaEm: "desc" },
-    include: { imovel: { select: { id: true, codigo: true, titulo: true } } },
+    include: {
+      imovel: { select: { id: true, codigo: true, titulo: true } },
+      despesas: { select: { valor: true } },
+    },
   });
 
   return manutencoes.sort(

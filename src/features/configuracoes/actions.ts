@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Finalidade } from "@/generated/prisma/enums";
 import { runAction } from "@/lib/action";
 import { db } from "@/lib/db";
+import { audit } from "@/lib/audit";
 import { AppError } from "@/lib/errors";
 import { detectFileType } from "@/lib/images";
 import { requireAdmin } from "@/lib/session";
@@ -37,11 +38,12 @@ const categoriaSchema = z.object({ nome: z.string().trim().min(2).max(60) });
 export async function criarCategoriaDespesa(input: unknown) {
   return runAction(
     async () => {
-      await requireAdmin();
+      const user = await requireAdmin();
       const { nome } = categoriaSchema.parse(input);
       const existente = await db.categoriaDespesa.findUnique({ where: { nome } });
       if (existente) throw new AppError("Já existe uma categoria com esse nome.");
-      await db.categoriaDespesa.create({ data: { nome } });
+      const criada = await db.categoriaDespesa.create({ data: { nome } });
+      await audit({ usuarioId: user.id, acao: "CREATE", entidade: "CategoriaDespesa", entidadeId: criada.id, dados: { nome } });
     },
     { message: "Categoria criada." },
   );
@@ -50,13 +52,42 @@ export async function criarCategoriaDespesa(input: unknown) {
 export async function alternarCategoriaDespesa(id: string, ativo: boolean) {
   return runAction(
     async () => {
-      await requireAdmin();
-      await db.categoriaDespesa.update({
-        where: { id: z.string().min(1).parse(id) },
-        data: { ativo },
+      const user = await requireAdmin();
+      const categoriaId = z.string().min(1).parse(id);
+      await db.categoriaDespesa.update({ where: { id: categoriaId }, data: { ativo } });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE",
+        entidade: "CategoriaDespesa",
+        entidadeId: categoriaId,
+        dados: { ativo },
       });
     },
     { message: "Categoria atualizada." },
+  );
+}
+
+export async function excluirCategoriaDespesa(id: string) {
+  return runAction(
+    async () => {
+      const user = await requireAdmin();
+      const categoriaId = z.string().min(1).parse(id);
+      const emUso = await db.despesa.count({ where: { categoriaId } });
+      if (emUso > 0) {
+        throw new AppError(
+          `Esta categoria tem ${emUso} despesa(s) registrada(s) e não pode ser excluída. Desative-a para tirá-la das novas despesas.`,
+        );
+      }
+      const categoria = await db.categoriaDespesa.delete({ where: { id: categoriaId } });
+      await audit({
+        usuarioId: user.id,
+        acao: "DELETE",
+        entidade: "CategoriaDespesa",
+        entidadeId: categoriaId,
+        dados: { nome: categoria.nome },
+      });
+    },
+    { message: "Categoria excluída." },
   );
 }
 
@@ -69,12 +100,26 @@ const modeloSchema = z.object({
 export async function salvarModeloContrato(id: string | null, input: unknown) {
   return runAction(
     async () => {
-      await requireAdmin();
+      const user = await requireAdmin();
       const dados = modeloSchema.parse(input);
       if (id) {
         await db.modeloContrato.update({ where: { id }, data: dados });
+        await audit({
+          usuarioId: user.id,
+          acao: "UPDATE",
+          entidade: "ModeloContrato",
+          entidadeId: id,
+          dados: { nome: dados.nome },
+        });
       } else {
-        await db.modeloContrato.create({ data: dados });
+        const criado = await db.modeloContrato.create({ data: dados });
+        await audit({
+          usuarioId: user.id,
+          acao: "CREATE",
+          entidade: "ModeloContrato",
+          entidadeId: criado.id,
+          dados: { nome: dados.nome },
+        });
       }
     },
     { message: "Modelo de contrato salvo." },
@@ -117,6 +162,7 @@ export async function criarModeloArquivo(formData: FormData) {
         },
       });
 
+      await audit({ usuarioId: user.id, acao: "CREATE", entidade: "ModeloContrato", entidadeId: modelo.id, dados: { nome, arquivo: arquivo.name } });
       return { id: modelo.id };
     },
     { message: "Modelo enviado." },
@@ -126,7 +172,7 @@ export async function criarModeloArquivo(formData: FormData) {
 export async function definirModeloPadrao(id: string) {
   return runAction(
     async () => {
-      await requireAdmin();
+      const user = await requireAdmin();
       const modeloId = z.string().min(1).parse(id);
       const modelo = await db.modeloContrato.findUnique({ where: { id: modeloId } });
       if (!modelo) throw new AppError("Modelo não encontrado.");
@@ -138,6 +184,13 @@ export async function definirModeloPadrao(id: string) {
         }),
         db.modeloContrato.update({ where: { id: modeloId }, data: { padrao: true } }),
       ]);
+      await audit({
+        usuarioId: user.id,
+        acao: "SET_DEFAULT",
+        entidade: "ModeloContrato",
+        entidadeId: modeloId,
+        dados: { nome: modelo.nome },
+      });
     },
     { message: "Modelo definido como padrão." },
   );
@@ -146,7 +199,7 @@ export async function definirModeloPadrao(id: string) {
 export async function excluirModeloContrato(id: string) {
   return runAction(
     async () => {
-      await requireAdmin();
+      const user = await requireAdmin();
       const modeloId = z.string().min(1).parse(id);
       const emUso = await db.contrato.count({ where: { modeloId } });
       if (emUso > 0)
@@ -154,6 +207,8 @@ export async function excluirModeloContrato(id: string) {
 
       const arquivos = await db.arquivo.findMany({ where: { modeloContratoId: modeloId } });
       await db.modeloContrato.delete({ where: { id: modeloId } });
+      await audit({ usuarioId: user.id, acao: "DELETE", entidade: "ModeloContrato", entidadeId: modeloId });
+      await audit({ usuarioId: user.id, acao: "DELETE", entidade: "ModeloContrato", entidadeId: modeloId });
       await Promise.all(arquivos.map((a) => storage.remove(a.caminho).catch(() => undefined)));
     },
     { message: "Modelo excluído." },

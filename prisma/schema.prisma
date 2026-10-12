@@ -32,6 +32,7 @@ model User {
   accounts   Account[]
   pagamentos Pagamento[]
   auditLogs  AuditLog[]
+  arquivos   Arquivo[]
 
   @@map("user")
 }
@@ -132,6 +133,8 @@ model Imovel {
   status    StatusImovel @default(DISPONIVEL)
   titulo    String // ex.: "Apto 02 – Ed. ADM"
   descricao String?
+  publicadoNoSite Boolean   @default(false)
+  publicadoEm      DateTime?
 
   empreendimentoId String?
   empreendimento   Empreendimento? @relation(fields: [empreendimentoId], references: [id], onDelete: SetNull)
@@ -535,6 +538,7 @@ model Vistoria {
 
 enum CategoriaArquivo {
   FOTO
+  FOTO_PERFIL
   DOCUMENTO
   CONTRATO_ASSINADO
   COMPROVANTE
@@ -572,6 +576,8 @@ model Arquivo {
   vistoria     Vistoria?   @relation(fields: [vistoriaId], references: [id], onDelete: Cascade)
   modeloContratoId String?
   modeloContrato   ModeloContrato? @relation(fields: [modeloContratoId], references: [id], onDelete: Cascade)
+  usuarioId        String?
+  usuario          User?           @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   enviadoPorId String?
   criadoEm     DateTime @default(now())

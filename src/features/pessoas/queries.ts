@@ -39,6 +39,7 @@ export async function listarPessoas(filtros: FiltrosPessoa) {
     db.pessoa.findMany({
       where,
       orderBy: { nome: "asc" },
+      include: { arquivos: { where: { categoria: "FOTO_PERFIL" }, select: { id: true }, take: 1 } },
       skip: (page - 1) * PESSOAS_POR_PAGINA,
       take: PESSOAS_POR_PAGINA,
     }),
@@ -49,10 +50,18 @@ export async function listarPessoas(filtros: FiltrosPessoa) {
 }
 
 export async function obterPessoa(id: string) {
+  const [pessoa, foto] = await Promise.all([
+    obterPessoaBase(id),
+    db.arquivo.findFirst({ where: { pessoaId: id, categoria: "FOTO_PERFIL" }, select: { id: true } }),
+  ]);
+  return pessoa ? { ...pessoa, fotoPerfilId: foto?.id ?? null } : null;
+}
+
+async function obterPessoaBase(id: string) {
   return db.pessoa.findFirst({
     where: { id, deletadoEm: null },
     include: {
-      arquivos: { orderBy: { criadoEm: "desc" } },
+      arquivos: { where: { categoria: { not: "FOTO_PERFIL" } }, orderBy: { criadoEm: "desc" } },
       imoveis: { select: { id: true, codigo: true, titulo: true } },
       contratos: {
         include: {

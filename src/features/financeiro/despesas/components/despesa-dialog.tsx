@@ -30,17 +30,21 @@ type Props = {
   imoveis: ComboboxOption[];
   categorias: ComboboxOption[];
   despesa?: DespesaInput & { id: string };
+  /** Abre o formulário já ligado a uma manutenção (o imóvel vem dela). */
+  manutencao?: { id: string; titulo: string; imovelId: string };
   trigger?: React.ReactNode;
 };
 
-export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) {
+export function DespesaDialog({ imoveis, categorias, despesa, manutencao, trigger }: Props) {
   const { pending, run } = useAction();
   const [aberto, setAberto] = React.useState(false);
   const form = useForm<DespesaInput>({
     resolver: zodResolver(despesaSchema),
     defaultValues: despesa ?? {
-      imovelId: null,
-      categoriaId: categorias[0]?.value ?? "",
+      imovelId: manutencao?.imovelId ?? null,
+      manutencaoId: manutencao?.id ?? null,
+      categoriaId:
+        categorias.find((c) => /manuten/i.test(c.label))?.value ?? categorias[0]?.value ?? "",
       data: toISODate(today()),
       valor: 0,
       fornecedor: "",
@@ -69,6 +73,11 @@ export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) 
       <DialogContent className="max-w-lg!">
         <DialogHeader>
           <DialogTitle>{despesa ? "Editar despesa" : "Nova despesa"}</DialogTitle>
+          {manutencao && (
+            <p className="text-sm text-muted-foreground">
+              Vinculada à manutenção <span className="font-semibold text-foreground">{manutencao.titulo}</span>
+            </p>
+          )}
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
           <FieldGroup className="grid gap-5 sm:grid-cols-2">
@@ -81,6 +90,7 @@ export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) 
                 />
               )}
             </FormField>
+            {!manutencao && (
             <FormField control={form.control} name="imovelId" label="Imóvel" description="Opcional">
               {(field) => (
                 <Combobox
@@ -92,6 +102,7 @@ export function DespesaDialog({ imoveis, categorias, despesa, trigger }: Props) 
                 />
               )}
             </FormField>
+            )}
             <FormField control={form.control} name="data" label="Data">
               {(field) => <Input {...field} id="despesa-data" type="date" />}
             </FormField>

@@ -47,10 +47,11 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-lg">
+    <Card className="w-full max-w-sm overflow-hidden shadow-xl shadow-primary/5">
+      <span aria-hidden className="-mt-4 mb-1 block h-1 bg-gradient-to-r from-primary to-brand-deep" />
       <CardHeader>
-        <CardTitle>Entrar</CardTitle>
-        <CardDescription>Use o e-mail e a senha cadastrados.</CardDescription>
+        <CardTitle className="text-xl font-bold">Bem-vindo de volta</CardTitle>
+        <CardDescription>Entre com o e-mail e a senha cadastrados.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>

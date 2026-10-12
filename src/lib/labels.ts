@@ -69,7 +69,7 @@ export const STATUS_CONTRATO: Record<StatusContrato, { label: string; tone: Tone
   RASCUNHO: { label: "Rascunho", tone: "neutral" },
   ATIVO: { label: "Ativo", tone: "success" },
   ENCERRADO: { label: "Encerrado", tone: "info" },
-  RESCINDIDO: { label: "Rescindido", tone: "warning" },
+  RESCINDIDO: { label: "Rescindido", tone: "danger" },
   RENOVADO: { label: "Renovado", tone: "primary" },
 };
 
@@ -110,7 +110,7 @@ export const STATUS_COBRANCA: Record<StatusCobrancaEfetivo, { label: string; ton
   ATRASADO: { label: "Atrasado", tone: "danger" },
   PAGO_PARCIAL: { label: "Pago parcial", tone: "warning" },
   PAGO: { label: "Pago", tone: "success" },
-  CANCELADO: { label: "Cancelado", tone: "neutral" },
+  CANCELADO: { label: "Cancelado", tone: "danger" },
 };
 
 export const FORMA_PAGAMENTO: Record<FormaPagamento, string> = {
@@ -126,12 +126,12 @@ export const STATUS_MANUTENCAO: Record<StatusManutencao, { label: string; tone: 
   ABERTA: { label: "Aberta", tone: "warning" },
   EM_ANDAMENTO: { label: "Em andamento", tone: "info" },
   CONCLUIDA: { label: "Concluída", tone: "success" },
-  CANCELADA: { label: "Cancelada", tone: "neutral" },
+  CANCELADA: { label: "Cancelada", tone: "danger" },
 };
 
 export const PRIORIDADE: Record<Prioridade, { label: string; tone: Tone }> = {
   BAIXA: { label: "Baixa", tone: "neutral" },
-  MEDIA: { label: "Média", tone: "info" },
+  MEDIA: { label: "Média", tone: "neutral" },
   ALTA: { label: "Alta", tone: "warning" },
   URGENTE: { label: "Urgente", tone: "danger" },
 };
@@ -144,6 +144,7 @@ export const TIPO_VISTORIA: Record<TipoVistoria, string> = {
 
 export const CATEGORIA_ARQUIVO: Record<CategoriaArquivo, string> = {
   FOTO: "Foto",
+  FOTO_PERFIL: "Foto de perfil",
   DOCUMENTO: "Documento",
   CONTRATO_ASSINADO: "Contrato assinado",
   COMPROVANTE: "Comprovante",

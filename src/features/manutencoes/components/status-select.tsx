@@ -10,9 +10,18 @@ import {
 } from "@/components/ui/select";
 import type { StatusManutencao } from "@/generated/prisma/enums";
 import { options, STATUS_MANUTENCAO } from "@/lib/labels";
+import { cn } from "@/lib/utils";
 import { alterarStatusManutencao } from "../actions";
 
-export function ManutencaoStatusSelect({ id, status }: { id: string; status: StatusManutencao }) {
+export function ManutencaoStatusSelect({
+  id,
+  status,
+  className,
+}: {
+  id: string;
+  status: StatusManutencao;
+  className?: string;
+}) {
   const { pending, run } = useAction();
 
   return (
@@ -21,7 +30,7 @@ export function ManutencaoStatusSelect({ id, status }: { id: string; status: Sta
       disabled={pending}
       onValueChange={(novo) => run(() => alterarStatusManutencao({ id, status: novo }))}
     >
-      <SelectTrigger size="sm" className="w-full">
+      <SelectTrigger size="sm" className={cn("w-full font-semibold", className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

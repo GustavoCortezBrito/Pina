@@ -7,13 +7,13 @@ import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
-import { requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin } from "@/lib/session";
 import { manutencaoSchema } from "./schemas";
 
 export async function criarManutencao(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("manutencoes");
       const dados = manutencaoSchema.parse(input);
       const manutencao = await db.manutencao.create({
         data: {
@@ -35,7 +35,7 @@ const statusSchema = z.object({ id: z.string().min(1), status: z.enum(StatusManu
 export async function alterarStatusManutencao(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("manutencoes");
       const { id, status } = statusSchema.parse(input);
       await db.manutencao.update({
         where: { id },

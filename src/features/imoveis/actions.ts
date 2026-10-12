@@ -2,11 +2,11 @@
 
 import { z } from "zod";
 import { runAction } from "@/lib/action";
-import { audit } from "@/lib/audit";
+import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
-import { requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin, requireUser } from "@/lib/session";
 import { today } from "@/lib/dates";
 import { imovelSchema, statusImovelSchema, type ImovelInput } from "./schemas";
 
@@ -87,8 +87,16 @@ export async function atualizarImovel(id: string, input: unknown) {
         throw new AppError("O imóvel tem contrato ativo; o status precisa continuar como Alugado.");
       }
 
-      await db.imovel.update({ where: { id }, data: paraBanco(dados) });
-      await audit({ usuarioId: user.id, acao: "UPDATE", entidade: "Imovel", entidadeId: id });
+      const antes = await db.imovel.findUnique({ where: { id } });
+      const novos = paraBanco(dados);
+      await db.imovel.update({ where: { id }, data: novos });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE",
+        entidade: "Imovel",
+        entidadeId: id,
+        dados: antes ? diffCampos(antes, novos) : undefined,
+      });
       return { id };
     },
     { message: "Imóvel atualizado." },
@@ -144,5 +152,26 @@ export async function excluirImovel(id: string) {
       await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Imovel", entidadeId: imovelId });
     },
     { message: "Imóvel excluído." },
+  );
+}
+
+export async function alterarPublicacaoImovel(id: string, publicado: boolean) {
+  return runAction(
+    async () => {
+      const user = await requireAccess("publicarSite");
+      const imovelId = z.string().min(1).parse(id);
+
+      await db.imovel.update({
+        where: { id: imovelId },
+        data: { publicadoNoSite: publicado, publicadoEm: publicado ? new Date() : null },
+      });
+      await audit({
+        usuarioId: user.id,
+        acao: publicado ? "PUBLISH" : "UNPUBLISH",
+        entidade: "Imovel",
+        entidadeId: imovelId,
+      });
+    },
+    { message: publicado ? "Imóvel publicado no site." : "Imóvel removido do site." },
   );
 }

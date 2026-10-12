@@ -20,18 +20,11 @@ import { formatDate } from "@/lib/dates";
 import { formatNumeroContrato } from "@/lib/format";
 import { options, PAPEL_CONTRATO, STATUS_CONTRATO } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
+import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Contratos" };
 
-const TONE_ICON_BG: Record<string, string> = {
-  success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  info: "bg-sky-500/15 text-sky-800 dark:text-sky-300",
-  warning: "bg-amber-500/20 text-amber-800 dark:text-amber-300",
-  danger: "bg-red-500/15 text-red-700 dark:text-red-300",
-  primary: "bg-primary/15 text-primary",
-  neutral: "bg-muted text-muted-foreground",
-};
 
 export default async function ContratosPage(props: PageProps<"/contratos">) {
   const params = await props.searchParams;
@@ -84,22 +77,32 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {itens.map((contrato, index) => {
               const status = STATUS_CONTRATO[contrato.status];
+              const estilo = {
+                card: TONE_CARD[status.tone],
+                icon: TONE_ICON[status.tone],
+                valor: status.tone === "success" ? TONE_TEXT.success : "text-foreground",
+              };
               const locatario = contrato.partes.find((p) => p.papel === "LOCATARIO");
               const fiador = contrato.partes.find((p) => p.papel === "FIADOR");
               return (
                 <Link
                   key={contrato.id}
                   href={`/contratos/${contrato.id}`}
-                  className="animate-in fade-in slide-in-from-bottom-2 block rounded-xl duration-500 fill-mode-both"
+                  className="group block animate-fade-up rounded-xl"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
-                  <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                  <Card
+                    className={cn(
+                      "h-full py-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/40",
+                      estilo.card,
+                    )}
+                  >
                     <CardContent className="flex h-full flex-col gap-3 p-5">
                       <div className="flex items-center justify-between">
                         <span
                           className={cn(
                             "flex size-11 shrink-0 items-center justify-center rounded-full",
-                            TONE_ICON_BG[status.tone],
+                            estilo.icon,
                           )}
                         >
                           <FileSignatureIcon className="size-5" />
@@ -127,7 +130,9 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
 
                       <div className="flex items-end justify-between border-t pt-3">
                         <div>
-                          <p className="text-lg font-bold tabular-nums">{formatBRL(contrato.valorAluguel)}</p>
+                          <p className={cn("text-lg font-bold tabular-nums", estilo.valor)}>
+                            {formatBRL(contrato.valorAluguel)}
+                          </p>
                           <p className="text-xs text-muted-foreground">por mês</p>
                         </div>
                         <p className="text-right text-xs text-muted-foreground">

@@ -18,11 +18,13 @@ function Progress({
       )}
       {...props}
     >
-      <ProgressPrimitive.Indicator
-        data-slot="progress-indicator"
-        className="size-full flex-1 bg-primary transition-all"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-      />
+      <div className="flex size-full origin-left animate-grow-x overflow-hidden rounded-full">
+        <ProgressPrimitive.Indicator
+          data-slot="progress-indicator"
+          className="size-full flex-1 rounded-full bg-primary transition-all duration-700"
+          style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+        />
+      </div>
     </ProgressPrimitive.Root>
   )
 }

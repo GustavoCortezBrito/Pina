@@ -15,18 +15,12 @@ import { formatDate, formatMonth } from "@/lib/dates";
 import { options, STATUS_COBRANCA } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
 import { getSettings } from "@/lib/settings";
+import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Cobranças do imóvel" };
 
-const TONE_ICON_BG: Record<string, string> = {
-  success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  info: "bg-sky-500/15 text-sky-800 dark:text-sky-300",
-  warning: "bg-amber-500/20 text-amber-800 dark:text-amber-300",
-  danger: "bg-red-500/15 text-red-700 dark:text-red-300",
-  primary: "bg-primary/15 text-primary",
-  neutral: "bg-muted text-muted-foreground",
-};
+const TONE_ICON_BG = TONE_ICON;
 
 export default async function CobrancasDoContratoPage(props: PageProps<"/financeiro/cobrancas/[contratoId]">) {
   const { contratoId } = await props.params;
@@ -83,7 +77,7 @@ export default async function CobrancasDoContratoPage(props: PageProps<"/finance
               return (
                 <Card
                   key={cobranca.id}
-                  className="animate-in fade-in slide-in-from-bottom-2 h-full duration-500 fill-mode-both"
+                  className={cn("h-full animate-fade-up py-0 duration-300 hover:-translate-y-0.5 hover:shadow-lg", TONE_CARD[status.tone])}
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
                   <CardContent className="flex h-full flex-col gap-3 p-5">
@@ -110,7 +104,15 @@ export default async function CobrancasDoContratoPage(props: PageProps<"/finance
                     </div>
 
                     <div className="border-t pt-3">
-                      <p className="mb-3 text-lg font-bold tabular-nums">{formatBRL(cobranca.saldo)}</p>
+                      {cobranca.statusEfetivo === "PAGO" ? (
+                        <p className="mb-3 text-lg font-bold text-success tabular-nums">
+                          {formatBRL(cobranca.valorTotal)} <span className="text-sm font-medium">recebido</span>
+                        </p>
+                      ) : (
+                        <p className={cn("mb-3 text-lg font-bold tabular-nums", TONE_TEXT[status.tone])}>
+                          {formatBRL(cobranca.saldo)}
+                        </p>
+                      )}
                       {podeReceber ? (
                         <ReceberDialog
                           cobrancaId={cobranca.id}

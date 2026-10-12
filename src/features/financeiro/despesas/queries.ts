@@ -33,7 +33,11 @@ export async function listarDespesas(filtros: FiltrosDespesa) {
     db.despesa.findMany({
       where,
       orderBy: { data: "desc" },
-      include: { categoria: true, imovel: { select: { id: true, codigo: true, titulo: true } } },
+      include: {
+        categoria: true,
+        imovel: { select: { id: true, codigo: true, titulo: true } },
+        manutencao: { select: { id: true, titulo: true } },
+      },
       skip: (page - 1) * DESPESAS_POR_PAGINA,
       take: DESPESAS_POR_PAGINA,
     }),

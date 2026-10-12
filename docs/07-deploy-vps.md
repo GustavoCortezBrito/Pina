@@ -1,4 +1,6 @@
-# 7. Deploy na VPS
+# 7. Deploy na VPS (sem Docker)
+
+Tudo roda direto no servidor: **Node 22 + PostgreSQL + Caddy (HTTPS) + systemd**. Os arquivos de apoio estão na pasta [`deploy/`](../deploy).
 
 ## 7.1 VPS recomendada
 
@@ -9,171 +11,127 @@
 | Disco | 40 GB SSD | 80 GB SSD (as fotos crescem) |
 | SO | Ubuntu 24.04 LTS | Ubuntu 24.04 LTS |
 
-Opções com bom custo e latência para o Brasil: Hostinger, Contabo, Hetzner, DigitalOcean, Magalu Cloud, Locaweb.
+Bom custo e latência para o Brasil: Hostinger, Contabo, Hetzner, DigitalOcean, Magalu Cloud, Locaweb.
 
-## 7.2 Preparação do servidor
+## 7.2 Preparar o servidor (uma vez)
 
 ```bash
-# usuário não-root + SSH por chave
+# como root: usuário comum + SSH por chave
 adduser deploy && usermod -aG sudo deploy
-# desabilitar login por senha e root em /etc/ssh/sshd_config
+# (copie sua chave: ssh-copy-id deploy@IP; depois desative senha/root em /etc/ssh/sshd_config)
+
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y ufw fail2ban unattended-upgrades
+sudo apt install -y ufw fail2ban unattended-upgrades git curl build-essential
 sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw enable
 
-# Docker
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker deploy
+# Node 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# PostgreSQL (só local, não exposto à internet)
+sudo apt install -y postgresql postgresql-contrib
+
+# Caddy (HTTPS automático)
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update && sudo apt install -y caddy
 ```
 
-DNS: criar um registro **A** `sistema.dominio.com.br` apontando para o IP da VPS.
+**DNS:** crie um registro **A** `sistema.seudominio.com.br` apontando para o IP da VPS.
 
-## 7.3 `docker-compose.yml` (produção)
-
-```yaml
-services:
-  app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DATABASE_URL: postgresql://pina:${POSTGRES_PASSWORD}@db:5432/pinasystem
-      STORAGE_LOCAL_PATH: /data/uploads
-    volumes:
-      - uploads:/data/uploads
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: pina
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: pinasystem
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pina"]
-      interval: 10s
-      retries: 5
-    # sem "ports": o banco não fica exposto para a internet
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-    depends_on:
-      - app
-
-  backup:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - ./docker/backup.sh:/backup.sh:ro
-      - uploads:/data/uploads:ro
-      - backups:/backups
-    entrypoint: ["/bin/sh", "-c", "echo '0 3 * * * /backup.sh' | crontab - && crond -f"]
-
-volumes:
-  pgdata:
-  uploads:
-  caddy_data:
-  backups:
-```
-
-## 7.4 `docker/Caddyfile`
-
-```
-sistema.dominio.com.br {
-    encode gzip zstd
-    request_body max_size 25MB
-    reverse_proxy app:3000
-}
-```
-
-O Caddy emite e renova o certificado HTTPS (Let's Encrypt) automaticamente.
-
-## 7.5 `docker/Dockerfile`
-
-```dockerfile
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npx prisma generate && npm run build
-
-FROM node:22-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-RUN addgroup -S app && adduser -S app -G app
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
-COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-USER app
-EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
-```
-
-> Requer `output: "standalone"` em `next.config.ts`.
-
-## 7.6 Backups (`docker/backup.sh`)
-
-```sh
-#!/bin/sh
-set -e
-DATA=$(date +%Y-%m-%d_%H%M)
-pg_dump -h db -U pina -Fc pinasystem > /backups/db_$DATA.dump
-tar -czf /backups/uploads_$DATA.tar.gz -C /data uploads
-# manter 30 dias localmente
-find /backups -type f -mtime +30 -delete
-```
-
-**Cópia externa (obrigatória):** usar `rclone` num cron do host para sincronizar o volume `backups` com Backblaze B2, Google Drive ou outro armazenamento, de preferência com criptografia (`rclone crypt`).
-
-**Restauração (testar antes de ir para produção):**
-```bash
-docker compose exec -T db pg_restore -U pina -d pinasystem --clean < db_AAAA-MM-DD.dump
-docker compose run --rm -v $(pwd):/restore app tar -xzf /restore/uploads_AAAA-MM-DD.tar.gz -C /data
-```
-
-## 7.7 Rotina de deploy
+## 7.3 Banco de dados
 
 ```bash
-ssh deploy@vps
-cd ~/pinasystem
-git pull origin main
-docker compose up -d --build
-docker compose logs -f app
+sudo -u postgres psql <<'SQL'
+CREATE USER pina WITH PASSWORD 'TROQUE-POR-UMA-SENHA-FORTE';
+CREATE DATABASE pinasystem OWNER pina;
+SQL
 ```
 
-Depois, dá para automatizar com GitHub Actions (build da imagem → GHCR → `docker compose pull && up -d` via SSH).
+O Postgres do Ubuntu já escuta só em `localhost`. Confirme: `sudo ss -tlnp | grep 5432` deve mostrar `127.0.0.1`.
+
+## 7.4 Código e configuração
+
+```bash
+sudo mkdir -p /opt/pinasystem /var/lib/pinasystem/uploads /var/backups/pinasystem
+sudo chown -R deploy:deploy /opt/pinasystem /var/lib/pinasystem /var/backups/pinasystem
+
+cd /opt/pinasystem
+git clone https://github.com/GustavoCortezBrito/Pina.git .
+cp deploy/env.production.example .env
+nano .env        # preencha DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, ADMIN_*
+chmod 600 .env
+```
+
+Gere o segredo com: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+
+## 7.5 Primeira instalação
+
+```bash
+cd /opt/pinasystem
+npm ci
+npx prisma migrate deploy     # cria as tabelas
+npm run db:seed               # cria o administrador do .env e os modelos de contrato padrão
+npm run build
+
+sudo cp deploy/pinasystem.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now pinasystem
+
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile   # edite o domínio dentro dele
+sudo systemctl reload caddy
+```
+
+Acesse `https://sistema.seudominio.com.br` e troque a senha do admin em **Meu perfil**.
+
+### Criar os outros usuários
+
+```bash
+npm run usuario:criar -- "Enivaldo Pina" enivaldopina@gmail.com admin
+npm run usuario:criar -- "Rafael Pina" rafaelpina2003@gmail.com admin
+```
+
+O comando imprime uma senha temporária. Papéis: `admin`, `gerente`, `operador`, `site`.
+
+## 7.6 Atualizar o sistema (rotina de deploy)
+
+```bash
+ssh deploy@IP
+/opt/pinasystem/deploy/deploy.sh
+```
+
+O script faz `git pull`, `npm ci`, migrações, build e reinicia o serviço. Ver logs: `journalctl -u pinasystem -f`.
+
+## 7.7 Backups
+
+`deploy/backup.sh` gera o dump do banco e um `.tar.gz` das fotos/documentos e apaga o que tem mais de 30 dias:
+
+```bash
+chmod +x /opt/pinasystem/deploy/*.sh
+# todo dia às 03:00, como usuário deploy:
+( crontab -l 2>/dev/null; echo "0 3 * * * /opt/pinasystem/deploy/backup.sh >> /var/log/pinasystem-backup.log 2>&1" ) | crontab -
+```
+
+**Cópia externa (obrigatória):** o backup só no próprio servidor não protege contra perda da VPS. Use `rclone` num cron para enviar `/var/backups/pinasystem` ao Backblaze B2 ou Google Drive (de preferência com `rclone crypt`).
+
+**Restaurar (teste antes de ir para produção):**
+
+```bash
+pg_restore -h localhost -U pina -d pinasystem --clean --if-exists db_AAAA-MM-DD_HHMM.dump
+tar -xzf uploads_AAAA-MM-DD_HHMM.tar.gz -C /var/lib/pinasystem
+```
 
 ## 7.8 Checklist de produção
 
-- [ ] `AUTH_SECRET` e `POSTGRES_PASSWORD` fortes e fora do Git
-- [ ] Porta do Postgres **não** exposta
-- [ ] HTTPS ativo
+- [ ] `BETTER_AUTH_SECRET` e senha do Postgres fortes e fora do Git
+- [ ] `.env` com permissão 600 e **nunca** commitado
+- [ ] `BETTER_AUTH_URL` com o endereço `https://` real
+- [ ] `EMBEDDED_POSTGRES="false"`
+- [ ] Postgres escutando só em localhost; firewall só com 22, 80 e 443
+- [ ] HTTPS ativo (Caddy)
 - [ ] Backup diário rodando **e restauração testada**
 - [ ] Cópia externa dos backups configurada
-- [ ] Monitoramento de disponibilidade (Uptime Kuma ou UptimeRobot)
-- [ ] Senha do admin inicial trocada
-- [ ] Limite de tentativas no login ativo
+- [ ] Monitoramento de disponibilidade (UptimeRobot ou Uptime Kuma)
+- [ ] Senhas temporárias dos usuários trocadas no primeiro acesso
 - [ ] `unattended-upgrades` e `fail2ban` ativos

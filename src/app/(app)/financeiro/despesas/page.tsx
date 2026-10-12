@@ -1,4 +1,4 @@
-import { PencilIcon, Trash2Icon, WalletIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon, WalletIcon, WrenchIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { ConfirmAction } from "@/components/shared/confirm-action";
 import { FilterBar, FilterSelect, MonthFilter } from "@/components/shared/filters";
@@ -13,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { ImportarDespesasDialog } from "@/features/financeiro/despesas/components/importar-despesas-dialog";
 import { DespesaDialog } from "@/features/financeiro/despesas/components/despesa-dialog";
 import { excluirDespesa } from "@/features/financeiro/despesas/actions";
 import { categoriasAtivas, listarDespesas } from "@/features/financeiro/despesas/queries";
@@ -44,7 +45,12 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
       <PageHeader
         title="Despesas"
         description="Gastos por imóvel: manutenção, IPTU, condomínio e outros."
-        actions={<DespesaDialog imoveis={imoveis} categorias={categoriasOptions} />}
+        actions={
+          <>
+            <ImportarDespesasDialog />
+            <DespesaDialog imoveis={imoveis} categorias={categoriasOptions} />
+          </>
+        }
       />
 
       <FilterBar>
@@ -69,12 +75,12 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
             {itens.map((despesa, index) => (
               <Card
                 key={despesa.id}
-                className="animate-in fade-in slide-in-from-bottom-2 h-full duration-500 fill-mode-both"
+                className="h-full animate-fade-up py-0 duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
                 <CardContent className="flex h-full flex-col gap-3 p-5">
                   <div className="flex items-center justify-between">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-danger/12 text-danger">
                       <WalletIcon className="size-5" />
                     </span>
                     <div className="flex shrink-0 gap-1">
@@ -84,6 +90,7 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
                         despesa={{
                           id: despesa.id,
                           imovelId: despesa.imovelId,
+                          manutencaoId: despesa.manutencaoId,
                           categoriaId: despesa.categoriaId,
                           data: formatDate(despesa.data).split("/").reverse().join("-"),
                           valor: despesa.valor,
@@ -117,6 +124,12 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
                       {formatDate(despesa.data)}
                       {despesa.imovel && ` · ${despesa.imovel.codigo}`}
                     </p>
+                    {despesa.manutencao && (
+                      <p className="flex items-center gap-1.5 truncate text-xs font-medium text-primary-ink">
+                        <WrenchIcon className="size-3.5 shrink-0" />
+                        <span className="truncate">Manutenção: {despesa.manutencao.titulo}</span>
+                      </p>
+                    )}
                     {despesa.fornecedor && (
                       <p className="truncate text-xs text-muted-foreground">{despesa.fornecedor}</p>
                     )}

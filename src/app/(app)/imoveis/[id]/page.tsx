@@ -18,9 +18,10 @@ import { PhotoGallery } from "@/components/shared/photo-gallery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { excluirImovel } from "@/features/imoveis/actions";
+import { PublicarSiteButton } from "@/features/imoveis/components/publicar-site-button";
+import { can } from "@/lib/permissions";
 import { ImovelStatusSelect } from "@/features/imoveis/components/status-select";
 import { obterImovel, resumoFinanceiroImovel } from "@/features/imoveis/queries";
 import { STATUS_CONTRATO, STATUS_MANUTENCAO, TIPO_IMOVEL, PAPEL_CONTRATO } from "@/lib/labels";
@@ -57,6 +58,9 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
         }
         actions={
           <>
+            {can(user.role, "publicarSite") && (
+              <PublicarSiteButton id={imovel.id} publicado={imovel.publicadoNoSite} />
+            )}
             <Button variant="outline" asChild>
               <Link href={`/imoveis/${imovel.id}/editar`}>
                 <PencilIcon /> Editar
@@ -79,23 +83,23 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
         }
       />
 
-      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
+      <div className="flex flex-wrap gap-2 text-sm">
+        <span className="flex animate-scale-in items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-medium shadow-sm ring-1 ring-border [&_svg]:text-primary-ink">
           <BedDoubleIcon className="size-4" /> {imovel.quartos} quartos
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex animate-scale-in items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-medium shadow-sm ring-1 ring-border [&_svg]:text-primary-ink">
           <ShowerHeadIcon className="size-4" /> {imovel.banheiros} banheiros
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex animate-scale-in items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-medium shadow-sm ring-1 ring-border [&_svg]:text-primary-ink">
           <CarIcon className="size-4" /> {imovel.vagas} vagas
         </span>
         {imovel.areaM2 != null && (
-          <span className="flex items-center gap-1.5">
+          <span className="flex animate-scale-in items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-medium shadow-sm ring-1 ring-border [&_svg]:text-primary-ink">
             <SquareIcon className="size-4" /> {imovel.areaM2} m²
           </span>
         )}
         {imovel.aceitaPet && (
-          <span className="flex items-center gap-1.5">
+          <span className="flex animate-scale-in items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-medium shadow-sm ring-1 ring-border [&_svg]:text-primary-ink">
             <PawPrintIcon className="size-4" /> Aceita pet
           </span>
         )}
@@ -113,7 +117,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
 
         <TabsContent value="dados" className="space-y-4">
           <Card>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground">Empreendimento</p>
                 <p className="text-sm">{imovel.empreendimento?.nome ?? "—"}</p>
@@ -139,7 +143,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 <p className="text-sm">{imovel.matricula ?? "—"}</p>
               </div>
               {imovel.caracteristicas.length > 0 && (
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <p className="mb-1.5 text-xs text-muted-foreground">Características</p>
                   <div className="flex flex-wrap gap-1.5">
                     {imovel.caracteristicas.map((c) => (
@@ -151,13 +155,13 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 </div>
               )}
               {imovel.descricao && (
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <p className="text-xs text-muted-foreground">Descrição</p>
                   <p className="text-sm whitespace-pre-line">{imovel.descricao}</p>
                 </div>
               )}
               {imovel.observacoes && (
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <p className="text-xs text-muted-foreground">Observações internas</p>
                   <p className="text-sm whitespace-pre-line">{imovel.observacoes}</p>
                 </div>
@@ -226,7 +230,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
             <CardContent className="grid gap-4 sm:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">Recebido (total)</p>
-                <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                <p className="text-lg font-semibold text-success">
                   {formatBRL(financeiro.recebido)}
                 </p>
               </div>
@@ -236,7 +240,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Despesas (total)</p>
-                <p className="text-lg font-semibold text-red-600 dark:text-red-400">
+                <p className="text-lg font-semibold text-danger">
                   {formatBRL(financeiro.despesas)}
                 </p>
               </div>
@@ -267,7 +271,6 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
           )}
         </TabsContent>
       </Tabs>
-      <Separator className="sr-only" />
     </div>
   );
 }

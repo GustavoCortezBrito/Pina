@@ -1,4 +1,5 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { LogoPdf } from "./logo";
 import { formatDate, formatDateLong } from "@/lib/dates";
 import { formatDocumento } from "@/lib/format";
 import { valorPorExtenso } from "@/lib/extenso";
@@ -58,11 +59,14 @@ export function ReciboDocument({ data }: { data: ReciboData }) {
   return (
     <Document title={`Recibo ${data.numero}`} author={data.locador.nome || "PinaSystem"}>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.brand}>{data.locador.nome || "Locador"}</Text>
-          {data.locador.documento && (
-            <Text style={styles.brandSub}>{formatDocumento(data.locador.documento)}</Text>
-          )}
+        <View style={[styles.header, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}>
+          <LogoPdf size={38} />
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.brand}>{data.locador.nome || "Locador"}</Text>
+            {data.locador.documento && (
+              <Text style={styles.brandSub}>{formatDocumento(data.locador.documento)}</Text>
+            )}
+          </View>
         </View>
 
         <Text style={styles.title}>RECIBO DE ALUGUEL</Text>

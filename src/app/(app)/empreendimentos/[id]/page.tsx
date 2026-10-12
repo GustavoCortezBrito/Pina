@@ -89,20 +89,20 @@ export default async function EmpreendimentoDetalhePage(props: PageProps<"/empre
               <Link
                 key={imovel.id}
                 href={`/imoveis/${imovel.id}`}
-                className="block animate-in rounded-xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
+                className="block animate-fade-up rounded-xl"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
-                <Card className="group h-full gap-0 overflow-hidden p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <Card className="group h-full gap-0 overflow-hidden p-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/45">
                   <div className="relative aspect-4/3 overflow-hidden">
                     <FotoCapa
                       arquivoId={imovel.arquivos[0]?.id}
                       alt={imovel.titulo}
-                      className="size-full transition-transform duration-300 group-hover:scale-105"
+                      className="size-full transition-transform duration-700 ease-out group-hover:scale-110"
                     />
                     <StatusBadge
                       label={status.label}
                       tone={status.tone}
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 bg-card/95 shadow-md backdrop-blur-sm dark:bg-card/90"
                     />
                   </div>
                   <div className="space-y-1 p-3">

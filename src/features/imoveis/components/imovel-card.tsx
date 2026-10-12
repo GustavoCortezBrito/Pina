@@ -16,31 +16,32 @@ export function ImovelCard({ imovel, index = 0 }: { imovel: ImovelResumo; index?
   return (
     <Link
       href={`/imoveis/${imovel.id}`}
-      className="block animate-in rounded-xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
-      style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+      className="block animate-fade-up rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      style={{ animationDelay: `${Math.min(index, 8) * 50}ms` }}
     >
-      <Card className="group h-full gap-0 overflow-hidden p-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-        <div className="relative aspect-4/3 overflow-hidden">
+      <Card className="group h-full gap-0 overflow-hidden p-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/45">
+        <div className="relative aspect-[16/10] overflow-hidden sm:aspect-4/3">
           <FotoCapa
             arquivoId={imovel.arquivos[0]?.id}
             alt={imovel.titulo}
-            className="size-full transition-transform duration-300 group-hover:scale-105"
+            className="size-full transition-transform duration-700 ease-out group-hover:scale-110"
           />
+          <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
           <StatusBadge
             label={status.label}
             tone={status.tone}
-            className="absolute top-3 right-3 h-7 px-3 text-sm shadow-sm"
+            className="absolute top-3 right-3 h-7 bg-card/95 px-3 text-sm shadow-md backdrop-blur-sm dark:bg-card/90"
           />
         </div>
         <div className="space-y-2 p-4">
           <div className="min-w-0">
-            <p className="truncate text-base font-bold">{imovel.titulo}</p>
+            <p className="truncate text-base font-bold transition-colors group-hover:text-primary-ink">{imovel.titulo}</p>
             <p className="text-sm text-muted-foreground">
               {imovel.codigo} · {TIPO_IMOVEL[imovel.tipo]}
             </p>
           </div>
           {imovel.valorAluguel != null && (
-            <p className="text-xl font-bold text-primary tabular-nums">
+            <p className="text-xl font-bold text-primary-ink tabular-nums">
               {formatBRL(imovel.valorAluguel)}
               <span className="ml-1 text-sm font-medium text-muted-foreground">/mês</span>
             </p>

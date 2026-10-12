@@ -2,12 +2,12 @@
 
 import { z } from "zod";
 import { runAction } from "@/lib/action";
-import { audit } from "@/lib/audit";
+import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { parseISODate } from "@/lib/dates";
 import { nullIfEmpty } from "@/lib/form";
-import { requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin } from "@/lib/session";
 import { today } from "@/lib/dates";
 import { normalizeDocumento } from "@/lib/validators";
 import { pessoaSchema, type PessoaInput } from "./schemas";
@@ -56,7 +56,7 @@ async function garantirDocumentoLivre(documento: string, ignorarId?: string) {
 export async function criarPessoa(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("pessoas");
       const dados = pessoaSchema.parse(input);
       await garantirDocumentoLivre(dados.documento);
 
@@ -76,12 +76,20 @@ export async function criarPessoa(input: unknown) {
 export async function atualizarPessoa(id: string, input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("pessoas");
       const dados = pessoaSchema.parse(input);
       await garantirDocumentoLivre(dados.documento, id);
 
-      await db.pessoa.update({ where: { id }, data: paraBanco(dados) });
-      await audit({ usuarioId: user.id, acao: "UPDATE", entidade: "Pessoa", entidadeId: id });
+      const antes = await db.pessoa.findUnique({ where: { id } });
+      const novos = paraBanco(dados);
+      await db.pessoa.update({ where: { id }, data: novos });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE",
+        entidade: "Pessoa",
+        entidadeId: id,
+        dados: antes ? diffCampos(antes, novos) : undefined,
+      });
       return { id };
     },
     { message: "Pessoa atualizada." },

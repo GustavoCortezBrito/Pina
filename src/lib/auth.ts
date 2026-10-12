@@ -2,9 +2,12 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
+import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 
-export const ROLES = { ADMIN: "admin", OPERADOR: "operador" } as const;
+import { ROLES } from "@/lib/permissions";
+
+export { ROLES };
 
 export const auth = betterAuth({
   appName: "PinaSystem",
@@ -17,6 +20,15 @@ export const auth = betterAuth({
     // Sistema interno: só o administrador cria contas.
     disableSignUp: true,
     minPasswordLength: 8,
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        after: async (session) => {
+          await audit({ usuarioId: session.userId, acao: "LOGIN", entidade: "User", entidadeId: session.userId });
+        },
+      },
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,

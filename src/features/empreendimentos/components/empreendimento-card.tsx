@@ -34,12 +34,12 @@ export function EmpreendimentoCard({
   return (
     <Link
       href={`/empreendimentos/${empreendimento.id}`}
-      className="group block animate-in rounded-xl duration-500 fill-mode-both fade-in slide-in-from-bottom-2 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="group block animate-fade-up rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
     >
-      <Card className="h-full gap-3 border-t-4 border-t-primary py-4 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+      <Card className="h-full gap-3 border-t-4 border-t-primary py-4 duration-300 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:ring-primary/45">
         <div className="flex items-center gap-3 px-4">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-deep text-primary-foreground shadow-md shadow-primary/30 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3">
             <Building2Icon className="size-6" />
           </span>
           <div className="min-w-0">
@@ -56,12 +56,12 @@ export function EmpreendimentoCard({
           <Numero
             valor={empreendimento.alugadas}
             rotulo="Alugadas"
-            className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300"
+            className="bg-success/12 text-success"
           />
           <Numero
             valor={empreendimento.vagas}
             rotulo="Disponíveis"
-            className="bg-amber-500/20 text-amber-900 dark:text-amber-300"
+            className="bg-primary/15 text-primary-ink"
           />
         </div>
 
@@ -73,7 +73,7 @@ export function EmpreendimentoCard({
           <Progress value={empreendimento.ocupacao} className="h-2.5" />
         </div>
 
-        <div className="mx-4 flex items-center justify-between border-t pt-3 text-sm font-semibold text-primary">
+        <div className="mx-4 flex items-center justify-between border-t pt-3 text-sm font-semibold text-primary-ink">
           Ver unidades
           <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-1" />
         </div>

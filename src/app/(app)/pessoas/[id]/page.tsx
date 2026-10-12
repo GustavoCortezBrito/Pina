@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { ConfirmAction } from "@/components/shared/confirm-action";
 import { FileList } from "@/components/shared/file-list";
 import { FileUploader } from "@/components/shared/file-uploader";
+import { FotoPerfilEditor } from "@/components/shared/foto-perfil";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,11 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
+        <FotoPerfilEditor tipo="pessoa" id={pessoa.id} nome={pessoa.nome} arquivoId={pessoa.fotoPerfilId} />
+        <p className="text-sm text-muted-foreground">Foto de perfil — toque na câmera para adicionar ou trocar.</p>
+      </div>
+
       <PageHeader
         title={
           <span className="flex flex-wrap items-center gap-2">
@@ -80,7 +86,7 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
 
         <TabsContent value="dados">
           <Card>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-muted-foreground">Telefone</p>
                 <p className="flex items-center gap-1.5 text-sm">
@@ -90,7 +96,7 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
                       href={link}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
+                      className="text-success hover:text-success/80"
                       aria-label="Abrir no WhatsApp"
                     >
                       <MessageCircleIcon className="size-4" />
@@ -138,7 +144,7 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
                 </div>
               )}
               {pessoa.observacoes && (
-                <div className="sm:col-span-2">
+                <div className="col-span-2">
                   <p className="text-xs text-muted-foreground">Observações</p>
                   <p className="text-sm whitespace-pre-line">{pessoa.observacoes}</p>
                 </div>

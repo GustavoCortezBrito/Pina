@@ -1,4 +1,5 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { LogoPdf } from "@/lib/pdf/logo";
 import { MarkdownPdf } from "@/lib/pdf/markdown";
 
 const styles = StyleSheet.create({
@@ -29,9 +30,12 @@ export function ContratoDocument({
   return (
     <Document title={titulo} author={locadorNome || "PinaSystem"}>
       <Page size="A4" style={styles.page}>
-        <View style={styles.header} fixed>
-          <Text style={styles.brand}>{locadorNome || "Contrato de Locação"}</Text>
-          <Text style={styles.brandSub}>{titulo}</Text>
+        <View style={[styles.header, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]} fixed>
+          <LogoPdf size={30} />
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={styles.brand}>{locadorNome || "Contrato de Locação"}</Text>
+            <Text style={styles.brandSub}>{titulo}</Text>
+          </View>
         </View>
 
         <MarkdownPdf texto={conteudo} />

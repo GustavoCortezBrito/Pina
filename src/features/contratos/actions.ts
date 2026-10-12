@@ -10,7 +10,7 @@ import { db } from "@/lib/db";
 import { parseISODate, today } from "@/lib/dates";
 import { nullIfEmpty } from "@/lib/form";
 import { sum } from "@/lib/money";
-import { requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin } from "@/lib/session";
 import { AppError } from "@/lib/errors";
 import { getSettings } from "@/lib/settings";
 import { contratoSchema } from "./schemas";
@@ -18,7 +18,7 @@ import { contratoSchema } from "./schemas";
 export async function criarContrato(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("contratos");
       const dados = contratoSchema.parse(input);
       const dataInicio = parseISODate(dados.dataInicio);
       if (!dataInicio) throw new AppError("Data de início inválida.");
@@ -115,7 +115,7 @@ const reajusteSchema = z.object({
 export async function aplicarReajuste(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("contratos");
       const dados = reajusteSchema.parse(input);
       const dataAplicacao = parseISODate(dados.dataAplicacao);
       if (!dataAplicacao) throw new AppError("Data inválida.");
@@ -188,7 +188,7 @@ const encerramentoSchema = z.object({
 export async function encerrarContrato(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("contratos");
       const dados = encerramentoSchema.parse(input);
       const dataSaida = parseISODate(dados.dataSaida);
       if (!dataSaida) throw new AppError("Data inválida.");

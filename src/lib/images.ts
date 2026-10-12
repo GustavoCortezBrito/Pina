@@ -74,3 +74,19 @@ export async function processImage(input: Buffer) {
     .toBuffer();
   return { data: main.data, width: main.info.width, height: main.info.height, thumb };
 }
+
+/** Foto de perfil: recorte quadrado centrado no rosto/assunto, 512px, WebP, sem metadados. */
+export async function processAvatar(input: Buffer) {
+  const base = sharp(input, { failOn: "error" }).rotate();
+  const data = await base
+    .clone()
+    .resize({ width: 512, height: 512, fit: "cover", position: "attention" })
+    .webp({ quality: 84 })
+    .toBuffer();
+  const thumb = await base
+    .clone()
+    .resize({ width: 160, height: 160, fit: "cover", position: "attention" })
+    .webp({ quality: 78 })
+    .toBuffer();
+  return { data, thumb };
+}

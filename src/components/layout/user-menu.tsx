@@ -4,7 +4,7 @@ import { LogOutIcon, MonitorIcon, MoonIcon, SunIcon, UserIcon } from "lucide-rea
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarFoto } from "@/components/shared/foto-perfil";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,9 +17,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { initials } from "@/lib/format";
 
-export function UserMenu({ nome, email, perfil }: { nome: string; email: string; perfil: string }) {
+export function UserMenu({
+  nome,
+  email,
+  perfil,
+  imagem,
+}: {
+  nome: string;
+  email: string;
+  perfil: string;
+  imagem?: string | null;
+}) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [montado, setMontado] = React.useState(false);
@@ -39,9 +48,7 @@ export function UserMenu({ nome, email, perfil }: { nome: string; email: string;
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Menu do usuário">
-          <Avatar className="size-8">
-            <AvatarFallback className="text-xs">{initials(nome)}</AvatarFallback>
-          </Avatar>
+          <AvatarFoto nome={nome} src={imagem} className="size-8" fallbackClassName="text-xs" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">

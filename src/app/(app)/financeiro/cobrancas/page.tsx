@@ -16,18 +16,12 @@ import { resumoCobrancasPorContrato } from "@/features/financeiro/cobrancas/quer
 import { formatDate } from "@/lib/dates";
 import type { Tone } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
+import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Cobranças" };
 
-const TONE_ICON_BG: Record<Tone, string> = {
-  success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  info: "bg-sky-500/15 text-sky-800 dark:text-sky-300",
-  warning: "bg-amber-500/20 text-amber-800 dark:text-amber-300",
-  danger: "bg-red-500/15 text-red-700 dark:text-red-300",
-  primary: "bg-primary/15 text-primary",
-  neutral: "bg-muted text-muted-foreground",
-};
+const TONE_ICON_BG = TONE_ICON;
 
 export default async function CobrancasPage(props: PageProps<"/financeiro/cobrancas">) {
   const params = await props.searchParams;
@@ -67,10 +61,10 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
               <Link
                 key={item.contratoId}
                 href={`/financeiro/cobrancas/${item.contratoId}`}
-                className="animate-in fade-in slide-in-from-bottom-2 block rounded-xl duration-500 fill-mode-both"
+                className="group block animate-fade-up rounded-xl"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
-                <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                <Card className={cn("h-full py-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/40", TONE_CARD[tone])}>
                   <CardContent className="flex h-full flex-col gap-3 p-5">
                     <div className="flex items-center justify-between">
                       <span
@@ -101,7 +95,7 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                       <p className="text-xs text-muted-foreground">
                         {item.pendentesCount > 0 ? "Saldo em aberto" : "Tudo recebido"}
                       </p>
-                      <p className="text-lg font-bold tabular-nums">{formatBRL(item.saldoAberto)}</p>
+                      <p className={cn("text-lg font-bold tabular-nums", TONE_TEXT[tone])}>{formatBRL(item.saldoAberto)}</p>
                     </div>
                   </CardContent>
                 </Card>

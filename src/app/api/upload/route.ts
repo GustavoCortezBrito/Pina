@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import type { CategoriaArquivo } from "@/generated/prisma/enums";
+import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { detectFileType, processImage } from "@/lib/images";
 import { getSession } from "@/lib/session";
@@ -150,6 +151,13 @@ export async function POST(request: Request) {
       select: { id: true, nomeOriginal: true },
     });
     precisaCapa = false;
+    await audit({
+      usuarioId: session.user.id,
+      acao: "UPLOAD",
+      entidade: "Arquivo",
+      entidadeId: criado.id,
+      dados: { nome: criado.nomeOriginal, categoria, [campo]: entidadeId },
+    });
     criados.push(criado);
   }
 

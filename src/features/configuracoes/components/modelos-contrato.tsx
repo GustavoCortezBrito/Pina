@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { ModeloEditor } from "./modelo-editor";
 import type { Finalidade } from "@/generated/prisma/enums";
 import {
   criarModeloArquivo,
@@ -124,7 +124,7 @@ export function ModelosContrato({ modelos }: { modelos: Modelo[] }) {
 
       {/* Editar modelo de texto existente */}
       <Dialog open={editando != null} onOpenChange={(open) => !open && setEditando(null)}>
-        <DialogContent className="max-w-2xl!">
+        <DialogContent className="max-h-[92vh] max-w-5xl! overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar modelo</DialogTitle>
             <DialogDescription>
@@ -152,12 +152,7 @@ export function ModelosContrato({ modelos }: { modelos: Modelo[] }) {
                 </SelectContent>
               </Select>
             </div>
-            <Textarea
-              value={form.conteudo}
-              onChange={(e) => setForm((f) => ({ ...f, conteudo: e.target.value }))}
-              rows={16}
-              className="font-mono text-xs"
-            />
+            <ModeloEditor value={form.conteudo} onChange={(conteudo) => setForm((f) => ({ ...f, conteudo }))} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditando(null)}>
@@ -217,7 +212,7 @@ function NovoModeloDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && fechar(false)}>
-      <DialogContent className="max-w-2xl!">
+      <DialogContent className="max-h-[92vh] max-w-5xl! overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo modelo de contrato</DialogTitle>
           <DialogDescription>Escreva um modelo com variáveis ou envie um arquivo já pronto.</DialogDescription>
@@ -258,12 +253,9 @@ function NovoModeloDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
               Use variáveis como <code>{"{{locatario.nome}}"}</code> e <code>{"{{imovel.endereco}}"}</code>. O PDF
               é gerado automaticamente com elas já preenchidas.
             </p>
-            <Textarea
+            <ModeloEditor
               value={textoForm.conteudo}
-              onChange={(e) => setTextoForm((f) => ({ ...f, conteudo: e.target.value }))}
-              rows={14}
-              className="font-mono text-xs"
-              placeholder="# CONTRATO DE LOCAÇÃO..."
+              onChange={(conteudo) => setTextoForm((f) => ({ ...f, conteudo }))}
             />
           </TabsContent>
 
