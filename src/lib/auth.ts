@@ -12,9 +12,16 @@ export { ROLES };
 export const auth = betterAuth({
   appName: "PinaSystem",
   database: prismaAdapter(db, { provider: "postgresql" }),
-  // Em produção vale só a BETTER_AUTH_URL; no desenvolvimento o Next pode subir em outra porta.
-  trustedOrigins:
-    process.env.NODE_ENV === "development" ? ["http://localhost:*", "http://127.0.0.1:*"] : [],
+  // Em produção vale a BETTER_AUTH_URL; endereços extras (ex.: um túnel de teste) entram em
+  // TRUSTED_ORIGINS, separados por vírgula. No desenvolvimento o Next pode subir em outra porta.
+  trustedOrigins: [
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "https://*.ngrok-free.app",
+    "https://*.ngrok.app",
+    "https://*.ngrok.io",
+    ...(process.env.TRUSTED_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean) ?? []),
+  ],
   emailAndPassword: {
     enabled: true,
     // Sistema interno: só o administrador cria contas.

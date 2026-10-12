@@ -17,6 +17,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -61,6 +62,34 @@
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-glow: glow 5s ease-in-out infinite;
+  --animate-ken-burns: ken-burns 24s ease-out both;
+  --animate-pulse-dot: pulse-dot 2s ease-out infinite;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-up {
@@ -254,6 +283,53 @@
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ---- Vitrine pública ---- */
+  /* Vidro escuro sobre fotos/superfícies escuras. */
+  .glass-dark {
+    background: color-mix(in oklch, oklch(0.15 0.01 50) 45%, transparent);
+    border: 1px solid oklch(1 0 0 / 14%);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+  /* Borda em gradiente da marca (cartão de preço, destaques). */
+  .border-gradient-brand {
+    position: relative;
+    isolation: isolate;
+  }
+  .border-gradient-brand::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: linear-gradient(140deg, var(--brand), transparent 40%, transparent 60%, var(--brand-deep));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+  }
+  /* Textura de pontinhos para fundos de seção. */
+  .bg-dots {
+    background-image: radial-gradient(color-mix(in oklch, var(--foreground) 9%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .btn-whatsapp {
+    background: linear-gradient(180deg, #2fe077, #1fb857);
+    color: #fff;
+    box-shadow:
+      0 10px 30px -10px rgb(37 211 102 / 0.6),
+      inset 0 1px 0 rgb(255 255 255 / 0.25);
+  }
+  .btn-whatsapp:hover {
+    filter: brightness(1.06);
+    box-shadow:
+      0 14px 36px -10px rgb(37 211 102 / 0.75),
+      inset 0 1px 0 rgb(255 255 255 / 0.25);
   }
 }
 

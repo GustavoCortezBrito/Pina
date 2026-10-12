@@ -25,7 +25,7 @@ export const siteSchema = z.object({
   whatsapp: z
     .string()
     .trim()
-    .transform((v) => v.replace(/D/g, ""))
+    .transform((v) => v.replace(/\D/g, ""))
     .refine((v) => v === "" || (v.length >= 12 && v.length <= 13 && v.startsWith("55")), "Use o formato com DDD, ex.: 5517996461102."),
   chamada: z.string().trim().max(160),
 });

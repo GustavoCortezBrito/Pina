@@ -33,6 +33,17 @@ const CAMPOS_PUBLICOS = {
   publicadoEm: true,
 } satisfies Prisma.ImovelSelect;
 
+/** O que o card da listagem precisa: campos públicos + só a foto de capa. */
+const SELECT_CARD = {
+  ...CAMPOS_PUBLICOS,
+  arquivos: {
+    where: { categoria: "FOTO" },
+    orderBy: [{ capa: "desc" }, { ordem: "asc" }],
+    select: { id: true },
+    take: 1,
+  },
+} satisfies Prisma.ImovelSelect;
+
 export type FiltrosVitrine = {
   tipo?: TipoImovel;
   quartos?: number;
@@ -54,15 +65,7 @@ export async function listarVitrine(filtros: FiltrosVitrine) {
   const [itens, total] = await Promise.all([
     db.imovel.findMany({
       where,
-      select: {
-        ...CAMPOS_PUBLICOS,
-        arquivos: {
-          where: { categoria: "FOTO" },
-          orderBy: [{ capa: "desc" }, { ordem: "asc" }],
-          select: { id: true },
-          take: 1,
-        },
-      },
+      select: SELECT_CARD,
       orderBy: [{ publicadoEm: "desc" }, { criadoEm: "desc" }],
       skip: (page - 1) * VITRINE_POR_PAGINA,
       take: VITRINE_POR_PAGINA,
@@ -81,6 +84,32 @@ export async function bairrosDaVitrine() {
     orderBy: { bairro: "asc" },
   });
   return linhas.map((l) => l.bairro as string);
+}
+
+/** Total publicado e quantos de cada tipo (para o selo do topo e os atalhos por tipo). */
+export async function resumoVitrine() {
+  const grupos = await db.imovel.groupBy({ by: ["tipo"], where: VISIVEL, _count: { _all: true } });
+  const porTipo = Object.fromEntries(grupos.map((g) => [g.tipo, g._count._all])) as Partial<Record<TipoImovel, number>>;
+  const total = grupos.reduce((soma, g) => soma + g._count._all, 0);
+  return { total, porTipo };
+}
+
+/** Outros imóveis para sugerir no fim da página de um imóvel (mesmo tipo primeiro). */
+export async function outrosImoveis(id: string, tipo: TipoImovel, quantos = 3) {
+  const mesmos = await db.imovel.findMany({
+    where: { ...VISIVEL, id: { not: id }, tipo },
+    select: SELECT_CARD,
+    orderBy: { publicadoEm: "desc" },
+    take: quantos,
+  });
+  if (mesmos.length >= quantos) return mesmos;
+  const resto = await db.imovel.findMany({
+    where: { ...VISIVEL, id: { notIn: [id, ...mesmos.map((m) => m.id)] } },
+    select: SELECT_CARD,
+    orderBy: { publicadoEm: "desc" },
+    take: quantos - mesmos.length,
+  });
+  return [...mesmos, ...resto];
 }
 
 export async function obterImovelVitrine(id: string) {

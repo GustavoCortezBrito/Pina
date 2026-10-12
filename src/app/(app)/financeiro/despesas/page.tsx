@@ -1,148 +1,67 @@
-import { PencilIcon, Trash2Icon, WalletIcon, WrenchIcon } from "lucide-react";
+import { WalletIcon, WrenchIcon } from "lucide-react";
 import type { Metadata } from "next";
-import { ConfirmAction } from "@/components/shared/confirm-action";
-import { FilterBar, FilterSelect, MonthFilter } from "@/components/shared/filters";
+import Link from "next/link";
 import { PageHeader } from "@/components/shared/page-header";
-import { Pagination } from "@/components/shared/pagination";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { ImportarDespesasDialog } from "@/features/financeiro/despesas/components/importar-despesas-dialog";
-import { DespesaDialog } from "@/features/financeiro/despesas/components/despesa-dialog";
-import { excluirDespesa } from "@/features/financeiro/despesas/actions";
-import { categoriasAtivas, listarDespesas } from "@/features/financeiro/despesas/queries";
-import { opcoesImoveis } from "@/features/imoveis/queries";
-import { formatDate } from "@/lib/dates";
-import { formatBRL } from "@/lib/money";
+import { DespesasSecao } from "@/features/financeiro/despesas/components/despesas-secao";
+import { ManutencoesSecao } from "@/features/manutencoes/components/manutencoes-secao";
+import { can } from "@/lib/permissions";
+import { requireUser } from "@/lib/session";
+import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Despesas" };
+export const metadata: Metadata = { title: "Despesas e manutenções" };
 
 export default async function DespesasPage(props: PageProps<"/financeiro/despesas">) {
-  const params = await props.searchParams;
-  const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
+  const [params, user] = await Promise.all([props.searchParams, requireUser()]);
+  const verDespesas = can(user.role, "despesas");
 
-  const [{ itens, total, page, pageCount, somaValor }, categorias, imoveis] = await Promise.all([
-    listarDespesas({
-      imovelId: lerParam("imovel"),
-      categoriaId: lerParam("categoria"),
-      mes: lerParam("mes"),
-      page: Number(lerParam("page") ?? 1),
-    }),
-    categoriasAtivas(),
-    opcoesImoveis(),
-  ]);
+  // Quem não vê despesas (operador) só tem a aba de manutenções.
+  const aba = verDespesas && params.aba !== "manutencoes" ? "despesas" : "manutencoes";
 
-  const categoriasOptions = categorias.map((c) => ({ value: c.id, label: c.nome }));
+  const abas = [
+    ...(verDespesas ? [{ id: "despesas", rotulo: "Despesas", icon: WalletIcon }] : []),
+    { id: "manutencoes", rotulo: "Manutenções", icon: WrenchIcon },
+  ];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Despesas"
-        description="Gastos por imóvel: manutenção, IPTU, condomínio e outros."
-        actions={
-          <>
-            <ImportarDespesasDialog />
-            <DespesaDialog imoveis={imoveis} categorias={categoriasOptions} />
-          </>
+        title={verDespesas ? "Despesas e manutenções" : "Manutenções"}
+        description={
+          verDespesas
+            ? "Gastos dos imóveis e chamados de manutenção, juntos: cada manutenção mostra o que já custou."
+            : undefined
         }
       />
 
-      <FilterBar>
-        <MonthFilter param="mes" />
-        <FilterSelect param="categoria" placeholder="Categoria" options={categoriasOptions} />
-        <FilterSelect param="imovel" placeholder="Imóvel" options={imoveis} />
-      </FilterBar>
+      {abas.length > 1 && (
+        <nav
+          aria-label="Seções"
+          className="inline-flex w-fit max-w-full gap-1 rounded-xl bg-muted p-1"
+        >
+          {abas.map(({ id, rotulo, icon: Icon }) => (
+            <Link
+              key={id}
+              href={`/financeiro/despesas?aba=${id}`}
+              scroll={false}
+              aria-current={aba === id ? "page" : undefined}
+              className={cn(
+                "inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium transition-all",
+                aba === id
+                  ? "bg-card font-semibold text-foreground shadow-sm ring-1 ring-border"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className={cn("size-4", aba === id && "text-primary-ink")} />
+              {rotulo}
+            </Link>
+          ))}
+        </nav>
+      )}
 
-      {itens.length === 0 ? (
-        <Empty className="border border-dashed">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <WalletIcon />
-            </EmptyMedia>
-            <EmptyTitle>Nenhuma despesa encontrada</EmptyTitle>
-            <EmptyDescription>Ajuste os filtros ou registre uma nova despesa.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+      {aba === "despesas" ? (
+        <DespesasSecao params={params} />
       ) : (
-        <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {itens.map((despesa, index) => (
-              <Card
-                key={despesa.id}
-                className="h-full animate-fade-up py-0 duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-              >
-                <CardContent className="flex h-full flex-col gap-3 p-5">
-                  <div className="flex items-center justify-between">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-danger/12 text-danger">
-                      <WalletIcon className="size-5" />
-                    </span>
-                    <div className="flex shrink-0 gap-1">
-                      <DespesaDialog
-                        imoveis={imoveis}
-                        categorias={categoriasOptions}
-                        despesa={{
-                          id: despesa.id,
-                          imovelId: despesa.imovelId,
-                          manutencaoId: despesa.manutencaoId,
-                          categoriaId: despesa.categoriaId,
-                          data: formatDate(despesa.data).split("/").reverse().join("-"),
-                          valor: despesa.valor,
-                          fornecedor: despesa.fornecedor ?? "",
-                          descricao: despesa.descricao ?? "",
-                          pago: despesa.pago,
-                        }}
-                        trigger={
-                          <Button variant="ghost" size="icon" aria-label="Editar despesa">
-                            <PencilIcon />
-                          </Button>
-                        }
-                      />
-                      <ConfirmAction
-                        trigger={
-                          <Button variant="ghost" size="icon" aria-label="Excluir despesa">
-                            <Trash2Icon />
-                          </Button>
-                        }
-                        titulo="Excluir despesa?"
-                        descricao="Esta ação não pode ser desfeita."
-                        confirmLabel="Excluir"
-                        action={excluirDespesa.bind(null, despesa.id)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <p className="truncate text-base font-semibold">{despesa.categoria.nome}</p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {formatDate(despesa.data)}
-                      {despesa.imovel && ` · ${despesa.imovel.codigo}`}
-                    </p>
-                    {despesa.manutencao && (
-                      <p className="flex items-center gap-1.5 truncate text-xs font-medium text-primary-ink">
-                        <WrenchIcon className="size-3.5 shrink-0" />
-                        <span className="truncate">Manutenção: {despesa.manutencao.titulo}</span>
-                      </p>
-                    )}
-                    {despesa.fornecedor && (
-                      <p className="truncate text-xs text-muted-foreground">{despesa.fornecedor}</p>
-                    )}
-                  </div>
-
-                  <p className="border-t pt-3 text-lg font-bold tabular-nums">{formatBRL(despesa.valor)}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <p className="text-right text-sm font-medium">Total do período: {formatBRL(somaValor)}</p>
-          <Pagination page={page} pageCount={pageCount} total={total} label="despesas" />
-        </>
+        <ManutencoesSecao verDespesas={verDespesas} />
       )}
     </div>
   );

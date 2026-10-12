@@ -11,7 +11,6 @@ import {
   SettingsIcon,
   UsersIcon,
   WalletIcon,
-  WrenchIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -76,14 +75,8 @@ const GRUPOS: Array<{ label: string; items: Item[] }> = [
       },
       {
         href: "/financeiro/despesas",
-        label: "Despesas",
+        label: "Despesas e manutenção",
         icon: WalletIcon,
-        modulo: "despesas",
-      },
-      {
-        href: "/manutencoes",
-        label: "Manutenções",
-        icon: WrenchIcon,
         modulo: "manutencoes",
       },
     ],

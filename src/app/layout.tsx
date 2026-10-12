@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.BETTER_AUTH_URL || "http://localhost:3000"),
   title: { default: "PinaSystem", template: "%s · PinaSystem" },
   description: "Gestão de imóveis, contratos e aluguéis da Pina's Empreendimentos.",
   applicationName: "PinaSystem",
