@@ -7,6 +7,8 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  // A vitrine de imóveis é pública (sem login).
+  if (pathname === "/vitrine" || pathname.startsWith("/vitrine/")) return NextResponse.next();
   const logado = getSessionCookie(request) !== null;
   const naTelaDeLogin = pathname === "/login";
 

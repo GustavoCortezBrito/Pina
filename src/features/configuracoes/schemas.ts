@@ -21,6 +21,15 @@ export const financeiroSchema = z.object({
   prazoPadraoMeses: z.number().int().min(1).max(120),
 });
 
+export const siteSchema = z.object({
+  whatsapp: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/D/g, ""))
+    .refine((v) => v === "" || (v.length >= 12 && v.length <= 13 && v.startsWith("55")), "Use o formato com DDD, ex.: 5517996461102."),
+  chamada: z.string().trim().max(160),
+});
+
 export const feriadosSchema = z.object({
   municipais: z.array(z.string().regex(/^\d{2}-\d{2}$/, "Use o formato MM-DD.")),
 });
@@ -28,11 +37,13 @@ export const feriadosSchema = z.object({
 export type Locador = z.infer<typeof locadorSchema>;
 export type Financeiro = z.infer<typeof financeiroSchema>;
 export type Feriados = z.infer<typeof feriadosSchema>;
+export type Site = z.infer<typeof siteSchema>;
 
 export type Settings = {
   locador: Locador;
   financeiro: Financeiro;
   feriados: Feriados;
+  site: Site;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -55,12 +66,17 @@ export const DEFAULT_SETTINGS: Settings = {
     prazoPadraoMeses: 30,
   },
   feriados: { municipais: [] },
+  site: {
+    whatsapp: "5517996461102",
+    chamada: "Casas, apartamentos e salas comerciais para alugar em Barretos/SP.",
+  },
 };
 
 export const SETTINGS_SCHEMAS = {
   locador: locadorSchema,
   financeiro: financeiroSchema,
   feriados: feriadosSchema,
+  site: siteSchema,
 } as const;
 
 export type SettingsKey = keyof Settings;

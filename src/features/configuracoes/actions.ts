@@ -11,7 +11,14 @@ import { detectFileType } from "@/lib/images";
 import { requireAdmin } from "@/lib/session";
 import { saveSettings } from "@/lib/settings";
 import { storage } from "@/lib/storage";
-import { financeiroSchema, locadorSchema, type Financeiro, type Locador } from "./schemas";
+import {
+  financeiroSchema,
+  locadorSchema,
+  siteSchema,
+  type Financeiro,
+  type Locador,
+  type Site,
+} from "./schemas";
 
 export async function salvarLocador(input: unknown) {
   return runAction(
@@ -30,6 +37,17 @@ export async function salvarFinanceiro(input: unknown) {
       await saveSettings("financeiro", financeiroSchema.parse(input) as Financeiro);
     },
     { message: "Parâmetros financeiros salvos." },
+  );
+}
+
+export async function salvarSite(input: unknown) {
+  return runAction(
+    async () => {
+      const user = await requireAdmin();
+      await saveSettings("site", siteSchema.parse(input) as Site);
+      await audit({ usuarioId: user.id, acao: "UPDATE", entidade: "Configuracao", entidadeId: "site" });
+    },
+    { message: "Dados do site salvos." },
   );
 }
 

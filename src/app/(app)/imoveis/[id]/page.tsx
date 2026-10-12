@@ -2,6 +2,7 @@ import {
   BedDoubleIcon,
   CarIcon,
   PawPrintIcon,
+  ExternalLinkIcon,
   PencilIcon,
   ShowerHeadIcon,
   SquareIcon,
@@ -59,7 +60,16 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
         actions={
           <>
             {can(user.role, "publicarSite") && (
-              <PublicarSiteButton id={imovel.id} publicado={imovel.publicadoNoSite} />
+              <>
+                <PublicarSiteButton id={imovel.id} publicado={imovel.publicadoNoSite} />
+                {imovel.publicadoNoSite && imovel.status === "DISPONIVEL" && (
+                  <Button variant="outline" asChild>
+                    <a href={`/vitrine/${imovel.id}`} target="_blank" rel="noreferrer">
+                      <ExternalLinkIcon /> Ver no site
+                    </a>
+                  </Button>
+                )}
+              </>
             )}
             <Button variant="outline" asChild>
               <Link href={`/imoveis/${imovel.id}/editar`}>

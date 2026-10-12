@@ -1,4 +1,6 @@
+import { GlobeIcon } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { RouteTransition } from "@/components/layout/route-transition";
@@ -22,6 +24,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <Logo showText className="[&>span:last-child]:hidden min-[380px]:[&>span:last-child]:grid" />
           </Link>
           <div className="ml-auto flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild className="text-primary-ink">
+              <a href="/vitrine" target="_blank" rel="noreferrer" title="Abrir a vitrine pública de imóveis">
+                <GlobeIcon /> <span className="hidden sm:inline">Ver site</span>
+              </a>
+            </Button>
             <ThemeToggle />
             <UserMenu nome={user.name} email={user.email} perfil={perfil} imagem={user.image} />
           </div>

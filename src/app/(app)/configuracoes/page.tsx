@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategoriasDespesa } from "@/features/configuracoes/components/categorias-despesa";
 import { FinanceiroForm } from "@/features/configuracoes/components/financeiro-form";
 import { LocadorForm } from "@/features/configuracoes/components/locador-form";
+import { SiteForm } from "@/features/configuracoes/components/site-form";
 import { ModelosContrato } from "@/features/configuracoes/components/modelos-contrato";
 import { UsuariosGestao } from "@/features/usuarios/components/usuarios-gestao";
 import { db } from "@/lib/db";
@@ -42,6 +43,7 @@ export default async function ConfiguracoesPage() {
           <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
           <TabsTrigger value="modelos">Modelos de contrato</TabsTrigger>
           <TabsTrigger value="categorias">Categorias de despesa</TabsTrigger>
+          <TabsTrigger value="site">Site</TabsTrigger>
           <TabsTrigger value="usuarios">Usuários e acessos</TabsTrigger>
         </TabsList>
 
@@ -67,6 +69,14 @@ export default async function ConfiguracoesPage() {
 
         <TabsContent value="categorias">
           <CategoriasDespesa categorias={categorias} />
+        </TabsContent>
+
+        <TabsContent value="site">
+          <Card>
+            <CardContent>
+              <SiteForm valores={settings.site} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="usuarios">
