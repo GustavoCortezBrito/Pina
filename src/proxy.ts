@@ -18,10 +18,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (logado && naTelaDeLogin) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
+  // Não redireciona /login só pela existência do cookie: um cookie vencido/inválido causaria um
+  // vai-e-vem infinito (/ → /login → /). A própria página de login confere a sessão de verdade.
   return NextResponse.next();
 }
 
