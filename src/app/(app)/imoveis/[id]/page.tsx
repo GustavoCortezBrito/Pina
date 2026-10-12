@@ -24,9 +24,11 @@ import { excluirImovel } from "@/features/imoveis/actions";
 import { PublicarSiteButton } from "@/features/imoveis/components/publicar-site-button";
 import { can } from "@/lib/permissions";
 import { ImovelStatusSelect } from "@/features/imoveis/components/status-select";
-import { obterImovel, resumoFinanceiroImovel } from "@/features/imoveis/queries";
-import { STATUS_CONTRATO, STATUS_MANUTENCAO, TIPO_IMOVEL, PAPEL_CONTRATO } from "@/lib/labels";
-import { formatDate, formatMonth } from "@/lib/dates";
+import { AbaContratos } from "@/features/imoveis/components/aba-contratos";
+import { AbaFinanceiro } from "@/features/imoveis/components/aba-financeiro";
+import { AbaManutencoes } from "@/features/imoveis/components/aba-manutencoes";
+import { detalheFinanceiroImovel, obterImovel } from "@/features/imoveis/queries";
+import { TIPO_IMOVEL } from "@/lib/labels";
 import { formatEndereco } from "@/lib/format";
 import { formatBRL } from "@/lib/money";
 import { isAdmin, requireUser } from "@/lib/session";
@@ -38,14 +40,14 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
   const [imovel, user] = await Promise.all([obterImovel(id), requireUser()]);
   if (!imovel) notFound();
 
-  const financeiro = await resumoFinanceiroImovel(id);
+  const financeiro = await detalheFinanceiroImovel(id);
   const fotos = imovel.arquivos.filter((a) => a.categoria === "FOTO");
   const documentos = imovel.arquivos.filter((a) => a.categoria !== "FOTO");
   const admin = isAdmin(user);
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader voltar={"/imoveis"}
         title={
           <span className="flex flex-wrap items-center gap-2">
             {imovel.titulo}
@@ -202,83 +204,16 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
           <FileList arquivos={documentos} />
         </TabsContent>
 
-        <TabsContent value="contratos" className="space-y-3">
-          {imovel.contratos.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              Nenhum contrato registrado ainda.
-            </p>
-          ) : (
-            imovel.contratos.map((contrato) => {
-              const status = STATUS_CONTRATO[contrato.status];
-              return (
-                <Card key={contrato.id}>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <div>
-                      <p className="font-medium">
-                        Contrato nº {String(contrato.numero).padStart(4, "0")}{" "}
-                        <Badge variant="secondary">{status.label}</Badge>
-                      </p>
-                      <p className="text-muted-foreground">
-                        {formatDate(contrato.dataInicio)} até {formatDate(contrato.dataFim)} ·{" "}
-                        {formatBRL(contrato.valorAluguel)}/mês
-                      </p>
-                      <p className="text-muted-foreground">
-                        {contrato.partes
-                          .map((parte) => `${PAPEL_CONTRATO[parte.papel]}: ${parte.pessoa.nome}`)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+        <TabsContent value="contratos">
+          <AbaContratos contratos={imovel.contratos} />
         </TabsContent>
 
         <TabsContent value="financeiro">
-          <Card>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Recebido (total)</p>
-                <p className="text-lg font-semibold text-success">
-                  {formatBRL(financeiro.recebido)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Em aberto</p>
-                <p className="text-lg font-semibold">{formatBRL(financeiro.emAberto)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Despesas (total)</p>
-                <p className="text-lg font-semibold text-danger">
-                  {formatBRL(financeiro.despesas)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <AbaFinanceiro imovelId={imovel.id} dados={financeiro} verDespesas={can(user.role, "despesas")} />
         </TabsContent>
 
-        <TabsContent value="manutencoes" className="space-y-3">
-          {imovel.manutencoes.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              Nenhuma manutenção registrada.
-            </p>
-          ) : (
-            imovel.manutencoes.map((m) => {
-              const status = STATUS_MANUTENCAO[m.status];
-              return (
-                <Card key={m.id}>
-                  <CardContent className="flex items-center justify-between gap-2 text-sm">
-                    <div>
-                      <p className="font-medium">{m.titulo}</p>
-                      <p className="text-muted-foreground">Aberta em {formatMonth(m.abertaEm)}</p>
-                    </div>
-                    <Badge variant="secondary">{status.label}</Badge>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+        <TabsContent value="manutencoes">
+          <AbaManutencoes manutencoes={imovel.manutencoes} verDespesas={can(user.role, "despesas")} />
         </TabsContent>
       </Tabs>
     </div>

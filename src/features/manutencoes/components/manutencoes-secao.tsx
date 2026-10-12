@@ -43,7 +43,13 @@ function estiloDe(status: StatusManutencao) {
   };
 }
 
-export async function ManutencoesSecao({ verDespesas }: { verDespesas: boolean }) {
+export async function ManutencoesSecao({
+  verDespesas,
+  destaque,
+}: {
+  verDespesas: boolean;
+  destaque?: string;
+}) {
   const [manutencoes, imoveis, categorias] = await Promise.all([
     listarManutencoes(),
     opcoesImoveis(),
@@ -101,9 +107,11 @@ export async function ManutencoesSecao({ verDespesas }: { verDespesas: boolean }
             return (
               <Card
                 key={item.id}
+                id={`manutencao-${item.id}`}
                 className={cn(
-                  "h-full animate-fade-up py-0 duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+                  "h-full scroll-mt-24 animate-fade-up py-0 duration-300 hover:-translate-y-0.5 hover:shadow-lg",
                   estilo.card,
+                  destaque === item.id && "ring-2 ring-primary shadow-xl shadow-primary/20",
                 )}
                 style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
               >

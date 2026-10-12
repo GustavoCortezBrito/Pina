@@ -61,7 +61,7 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader voltar={"/contratos"}
         title={
           <span className="flex flex-wrap items-center gap-2">
             Contrato nº {formatNumeroContrato(contrato.numero)}

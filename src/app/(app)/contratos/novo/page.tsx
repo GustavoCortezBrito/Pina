@@ -17,7 +17,7 @@ export default async function NovoContratoPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title="Novo contrato" description="Preencha as etapas para montar o contrato." />
+      <PageHeader voltar={"/contratos"} title="Novo contrato" description="Preencha as etapas para montar o contrato." />
       <ContratoWizard
         imoveis={imoveis}
         inquilinos={inquilinos}

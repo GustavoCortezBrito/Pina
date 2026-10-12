@@ -54,7 +54,7 @@ export default async function EditarImovelPage(props: PageProps<"/imoveis/[id]/e
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title={`Editar · ${imovel.codigo}`} description={imovel.titulo} />
+      <PageHeader voltar={`/imoveis/${id}`} title={`Editar · ${imovel.codigo}`} description={imovel.titulo} />
       <ImovelForm
         imovelId={imovel.id}
         valores={valores}

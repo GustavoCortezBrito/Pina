@@ -41,7 +41,7 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
         <p className="text-sm text-muted-foreground">Foto de perfil — toque na câmera para adicionar ou trocar.</p>
       </div>
 
-      <PageHeader
+      <PageHeader voltar={"/pessoas"}
         title={
           <span className="flex flex-wrap items-center gap-2">
             {pessoa.nome}

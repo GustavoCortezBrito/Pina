@@ -1,6 +1,8 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import type { StatusImovel, TipoImovel } from "@/generated/prisma/enums";
+import { statusEfetivo } from "@/features/financeiro/services/encargos";
+import { today } from "@/lib/dates";
 import { db } from "@/lib/db";
 
 export const IMOVEIS_POR_PAGINA = 12;
@@ -108,7 +110,7 @@ export async function obterImovel(id: string) {
           partes: { include: { pessoa: { select: { id: true, nome: true } } } },
         },
       },
-      manutencoes: { orderBy: { abertaEm: "desc" } },
+      manutencoes: { orderBy: { abertaEm: "desc" }, include: { despesas: { select: { valor: true } } } },
     },
   });
 }
@@ -157,5 +159,59 @@ export async function resumoFinanceiroImovel(imovelId: string) {
     recebido: recebido._sum.valorPago ?? 0,
     despesas: despesas._sum.valor ?? 0,
     emAberto,
+  };
+}
+
+/** Aba Financeiro do imóvel: totais, atrasos, próximas cobranças e últimas despesas. */
+export async function detalheFinanceiroImovel(imovelId: string) {
+  const hoje = today();
+  const [resumo, abertas, despesas, contratos] = await Promise.all([
+    resumoFinanceiroImovel(imovelId),
+    db.cobranca.findMany({
+      where: { contrato: { imovelId }, status: { in: ["PENDENTE", "PAGO_PARCIAL"] } },
+      orderBy: { vencimento: "asc" },
+      take: 120,
+      select: {
+        id: true,
+        contratoId: true,
+        competencia: true,
+        vencimento: true,
+        status: true,
+        valorTotal: true,
+        pagamentos: { select: { valorPrincipal: true } },
+      },
+    }),
+    db.despesa.findMany({
+      where: { imovelId },
+      orderBy: { data: "desc" },
+      take: 5,
+      select: { id: true, data: true, valor: true, fornecedor: true, categoria: { select: { nome: true } } },
+    }),
+    db.contrato.findMany({
+      where: { imovelId },
+      orderBy: [{ status: "asc" }, { dataInicio: "desc" }],
+      select: { id: true, status: true },
+    }),
+  ]);
+
+  const cobrancas = abertas.map((c) => ({
+    id: c.id,
+    contratoId: c.contratoId,
+    competencia: c.competencia,
+    vencimento: c.vencimento,
+    saldo: c.valorTotal - c.pagamentos.reduce((s, p) => s + p.valorPrincipal, 0),
+    atrasada: statusEfetivo(c.status, c.vencimento, hoje) === "ATRASADO",
+  }));
+  const atrasadas = cobrancas.filter((c) => c.atrasada);
+
+  return {
+    ...resumo,
+    resultado: resumo.recebido - resumo.despesas,
+    atrasadasQtde: atrasadas.length,
+    atrasadasValor: atrasadas.reduce((s, c) => s + c.saldo, 0),
+    proximas: cobrancas.slice(0, 4),
+    ultimasDespesas: despesas,
+    // Página de cobranças a abrir: do contrato ativo, ou do mais recente.
+    contratoId: (contratos.find((c) => c.status === "ATIVO") ?? contratos[0])?.id ?? null,
   };
 }

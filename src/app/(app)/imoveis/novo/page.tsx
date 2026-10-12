@@ -14,7 +14,7 @@ export default async function NovoImovelPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title="Novo imóvel" description="Preencha os dados do imóvel." />
+      <PageHeader voltar={"/imoveis"} title="Novo imóvel" description="Preencha os dados do imóvel." />
       <ImovelForm empreendimentos={empreendimentos} proprietarios={proprietarios} />
     </div>
   );

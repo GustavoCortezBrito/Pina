@@ -30,7 +30,7 @@ export default async function EmpreendimentoDetalhePage(props: PageProps<"/empre
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeader voltar={"/empreendimentos"}
         title={empreendimento.nome}
         description={formatEndereco(empreendimento)}
         actions={

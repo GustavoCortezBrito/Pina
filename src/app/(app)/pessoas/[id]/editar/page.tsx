@@ -45,7 +45,7 @@ export default async function EditarPessoaPage(props: PageProps<"/pessoas/[id]/e
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <PageHeader title={`Editar · ${pessoa.nome}`} />
+      <PageHeader voltar={`/pessoas/${id}`} title={`Editar · ${pessoa.nome}`} />
       <PessoaForm pessoaId={pessoa.id} valores={valores} />
     </div>
   );

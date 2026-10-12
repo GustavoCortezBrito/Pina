@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Novo empreendimento" };
 export default function NovoEmpreendimentoPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader title="Novo empreendimento" />
+      <PageHeader voltar={"/empreendimentos"} title="Novo empreendimento" />
       <EmpreendimentoForm />
     </div>
   );

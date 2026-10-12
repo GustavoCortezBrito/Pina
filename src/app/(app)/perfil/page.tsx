@@ -17,7 +17,7 @@ export default async function PerfilPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <PageHeader title="Meu perfil" description="Seus dados e sua senha de acesso." />
+      <PageHeader voltar={"/"} title="Meu perfil" description="Seus dados e sua senha de acesso." />
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-5">
         <FotoPerfilEditor tipo="usuario" id={user.id} nome={user.name} arquivoId={fotoId} />
         <p className="text-sm text-muted-foreground">

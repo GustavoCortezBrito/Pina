@@ -61,7 +61,10 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
       {aba === "despesas" ? (
         <DespesasSecao params={params} />
       ) : (
-        <ManutencoesSecao verDespesas={verDespesas} />
+        <ManutencoesSecao
+          verDespesas={verDespesas}
+          destaque={typeof params.destaque === "string" ? params.destaque : undefined}
+        />
       )}
     </div>
   );
