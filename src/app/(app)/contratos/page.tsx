@@ -2,6 +2,7 @@ import { FileSignatureIcon, PlusIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { FilterBar, FilterSelect, SearchInput } from "@/components/shared/filters";
+import { CardOverlayLink, ImovelLink } from "@/components/shared/imovel-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -85,15 +86,18 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
               const locatario = contrato.partes.find((p) => p.papel === "LOCATARIO");
               const fiador = contrato.partes.find((p) => p.papel === "FIADOR");
               return (
-                <Link
+                <div
                   key={contrato.id}
-                  href={`/contratos/${contrato.id}`}
-                  className="group block animate-fade-up rounded-xl"
+                  className="group relative animate-fade-up rounded-xl"
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
+                  <CardOverlayLink
+                    href={`/contratos/${contrato.id}`}
+                    label={`Abrir contrato nº ${formatNumeroContrato(contrato.numero)}`}
+                  />
                   <Card
                     className={cn(
-                      "h-full py-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/40",
+                      "pointer-events-none h-full py-0 duration-300 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:ring-primary/40",
                       estilo.card,
                     )}
                   >
@@ -111,7 +115,9 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                       </div>
 
                       <div className="min-w-0 flex-1 space-y-1">
-                        <p className="truncate text-base font-semibold">{contrato.imovel.titulo}</p>
+                        <p className="truncate text-base font-semibold">
+                          <ImovelLink id={contrato.imovel.id}>{contrato.imovel.titulo}</ImovelLink>
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           nº {formatNumeroContrato(contrato.numero)} · {contrato.imovel.codigo}
                         </p>
@@ -143,7 +149,7 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                       </div>
                     </CardContent>
                   </Card>
-                </Link>
+                </div>
               );
             })}
           </div>

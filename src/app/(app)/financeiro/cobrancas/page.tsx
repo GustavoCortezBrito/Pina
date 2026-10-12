@@ -1,7 +1,7 @@
 import { CalendarIcon, HandCoinsIcon } from "lucide-react";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { FilterBar, SearchInput } from "@/components/shared/filters";
+import { CardOverlayLink, ImovelLink } from "@/components/shared/imovel-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,13 +58,21 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                   : "Em dia";
 
             return (
-              <Link
+              <div
                 key={item.contratoId}
-                href={`/financeiro/cobrancas/${item.contratoId}`}
-                className="group block animate-fade-up rounded-xl"
+                className="group relative animate-fade-up rounded-xl"
                 style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
               >
-                <Card className={cn("h-full py-0 duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-primary/40", TONE_CARD[tone])}>
+                <CardOverlayLink
+                  href={`/financeiro/cobrancas/${item.contratoId}`}
+                  label={`Ver cobranças de ${item.imovel.titulo}`}
+                />
+                <Card
+                  className={cn(
+                    "pointer-events-none h-full py-0 duration-300 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:ring-primary/40",
+                    TONE_CARD[tone],
+                  )}
+                >
                   <CardContent className="flex h-full flex-col gap-3 p-5">
                     <div className="flex items-center justify-between">
                       <span
@@ -79,7 +87,9 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                     </div>
 
                     <div className="min-w-0 flex-1 space-y-1">
-                      <p className="truncate text-base font-semibold">{item.imovel.titulo}</p>
+                      <p className="truncate text-base font-semibold">
+                        <ImovelLink id={item.imovel.id}>{item.imovel.titulo}</ImovelLink>
+                      </p>
                       <p className="truncate text-sm text-muted-foreground">
                         {item.imovel.codigo} · {item.inquilino}
                       </p>
@@ -99,7 +109,7 @@ export default async function CobrancasPage(props: PageProps<"/financeiro/cobran
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
+              </div>
             );
           })}
         </div>

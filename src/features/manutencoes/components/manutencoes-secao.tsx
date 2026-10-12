@@ -7,6 +7,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { ImovelLink } from "@/components/shared/imovel-link";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
@@ -119,7 +120,10 @@ export async function ManutencoesSecao({ verDespesas }: { verDespesas: boolean }
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-base font-semibold">{item.titulo}</p>
                     <p className="truncate text-sm text-muted-foreground">
-                      {item.imovel.codigo} · aberta em {formatDate(item.abertaEm)}
+                      <ImovelLink id={item.imovel.id} className="font-medium text-foreground">
+                        {item.imovel.codigo}
+                      </ImovelLink>{" "}
+                      · aberta em {formatDate(item.abertaEm)}
                     </p>
                     {item.concluidaEm && (
                       <p className="text-xs text-muted-foreground">concluída em {formatDate(item.concluidaEm)}</p>

@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FileList } from "@/components/shared/file-list";
 import { FileUploader } from "@/components/shared/file-uploader";
+import { ImovelLink } from "@/components/shared/imovel-link";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +68,14 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
             <StatusBadge label={status.label} tone={status.tone} />
           </span>
         }
-        description={`${contrato.imovel.titulo} (${contrato.imovel.codigo}) · ${FINALIDADE[contrato.finalidade]}`}
+        description={
+          <>
+            <ImovelLink id={contrato.imovel.id} className="font-medium text-foreground">
+              {contrato.imovel.titulo} ({contrato.imovel.codigo})
+            </ImovelLink>{" "}
+            · {FINALIDADE[contrato.finalidade]}
+          </>
+        }
         actions={
           <>
             {contrato.status === "ATIVO" && (

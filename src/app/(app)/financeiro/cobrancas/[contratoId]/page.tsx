@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FilterBar, FilterSelect, MonthFilter } from "@/components/shared/filters";
+import { ImovelLink } from "@/components/shared/imovel-link";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,9 @@ export default async function CobrancasDoContratoPage(props: PageProps<"/finance
             <ArrowLeftIcon /> Todos os imóveis
           </Link>
         </Button>
-        <h1 className="text-2xl font-semibold tracking-tight">{contrato.imovel.titulo}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          <ImovelLink id={contrato.imovel.id}>{contrato.imovel.titulo}</ImovelLink>
+        </h1>
         <p className="text-sm text-muted-foreground">
           {contrato.imovel.codigo} · {inquilino}
         </p>

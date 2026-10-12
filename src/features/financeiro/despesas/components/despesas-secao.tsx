@@ -2,6 +2,7 @@ import { PencilIcon, Trash2Icon, WalletIcon, WrenchIcon } from "lucide-react";
 import { ConfirmAction } from "@/components/shared/confirm-action";
 import { FilterBar, FilterSelect, MonthFilter } from "@/components/shared/filters";
 import { Pagination } from "@/components/shared/pagination";
+import { ImovelLink } from "@/components/shared/imovel-link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -120,7 +121,14 @@ export async function DespesasSecao({
                     <p className="truncate text-base font-semibold">{despesa.categoria.nome}</p>
                     <p className="truncate text-sm text-muted-foreground">
                       {formatDate(despesa.data)}
-                      {despesa.imovel && ` · ${despesa.imovel.codigo}`}
+                      {despesa.imovel && (
+                        <>
+                          {" · "}
+                          <ImovelLink id={despesa.imovel.id} className="font-medium text-foreground">
+                            {despesa.imovel.codigo}
+                          </ImovelLink>
+                        </>
+                      )}
                     </p>
                     {despesa.manutencao && (
                       <p className="flex items-center gap-1.5 truncate text-xs font-medium text-primary-ink">
