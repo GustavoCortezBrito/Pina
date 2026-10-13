@@ -1,4 +1,11 @@
-import { MessageCircleIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ExternalLinkIcon,
+  FileSignatureIcon,
+  HandCoinsIcon,
+  MessageCircleIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -6,15 +13,18 @@ import { ConfirmAction } from "@/components/shared/confirm-action";
 import { FileList } from "@/components/shared/file-list";
 import { FileUploader } from "@/components/shared/file-uploader";
 import { FotoPerfilEditor } from "@/components/shared/foto-perfil";
+import { ImovelLink } from "@/components/shared/imovel-link";
 import { PageHeader } from "@/components/shared/page-header";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ContratoPreviewDialog } from "@/features/contratos/components/contrato-preview-dialog";
 import { excluirPessoa } from "@/features/pessoas/actions";
 import { obterPessoa } from "@/features/pessoas/queries";
 import { formatDate } from "@/lib/dates";
-import { formatDocumento, formatEndereco, formatPhone, whatsappLink } from "@/lib/format";
+import { formatDocumento, formatEndereco, formatNumeroContrato, formatPhone, whatsappLink } from "@/lib/format";
 import {
   ESTADO_CIVIL,
   PAPEL_CONTRATO,
@@ -23,6 +33,8 @@ import {
   TIPO_PESSOA,
 } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
+import { TONE_CARD, TONE_ICON } from "@/lib/tones";
+import { cn } from "@/lib/utils";
 import { isAdmin, requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Pessoa" };
@@ -171,20 +183,50 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
           ) : (
             pessoa.contratos.map((parte) => {
               const status = STATUS_CONTRATO[parte.contrato.status];
+              const numero = formatNumeroContrato(parte.contrato.numero);
               return (
-                <Card key={parte.id}>
-                  <CardContent className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                    <div>
-                      <p className="font-medium">
-                        {parte.contrato.imovel.titulo} ({parte.contrato.imovel.codigo}){" "}
-                        <Badge variant="secondary">{status.label}</Badge>
-                      </p>
-                      <p className="text-muted-foreground">
-                        {PAPEL_CONTRATO[parte.papel]} · {formatDate(parte.contrato.dataInicio)} até{" "}
-                        {formatDate(parte.contrato.dataFim)}
-                      </p>
+                <Card
+                  key={parte.id}
+                  className={cn("animate-fade-up gap-3 p-4 sm:p-5", TONE_CARD[status.tone])}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-full", TONE_ICON[status.tone])}>
+                        <FileSignatureIcon className="size-5" />
+                      </span>
+                      <div>
+                        <p className="font-bold">
+                          Contrato nº {numero} <StatusBadge label={status.label} tone={status.tone} className="ml-1" />
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <ImovelLink id={parte.contrato.imovel.id} className="font-medium text-foreground">
+                            {parte.contrato.imovel.titulo} ({parte.contrato.imovel.codigo})
+                          </ImovelLink>
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
+                    <p className="text-right text-lg font-bold text-primary-ink tabular-nums">
+                      {formatBRL(parte.contrato.valorAluguel)}
+                      <span className="block text-xs font-medium text-muted-foreground">por mês</span>
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">{PAPEL_CONTRATO[parte.papel]}</strong> · {formatDate(parte.contrato.dataInicio)}{" "}
+                    até {formatDate(parte.contrato.dataFim)}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+                    <ContratoPreviewDialog contratoId={parte.contrato.id} rotulo="Visualizar contrato" variant="default" />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/contratos/${parte.contrato.id}`}>
+                        <ExternalLinkIcon /> Abrir contrato
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/financeiro/cobrancas/${parte.contrato.id}`}>
+                        <HandCoinsIcon /> Cobranças
+                      </Link>
+                    </Button>
+                  </div>
                 </Card>
               );
             })

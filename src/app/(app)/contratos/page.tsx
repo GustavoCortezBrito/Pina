@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { FilterBar, FilterSelect, SearchInput } from "@/components/shared/filters";
 import { CardOverlayLink, ImovelLink } from "@/components/shared/imovel-link";
+import { ContratoPreviewDialog } from "@/features/contratos/components/contrato-preview-dialog";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -132,6 +133,10 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                             {PAPEL_CONTRATO.FIADOR}: {fiador.pessoa.nome}
                           </p>
                         )}
+                      </div>
+
+                      <div className="pointer-events-auto relative -mt-1 flex">
+                        <ContratoPreviewDialog contratoId={contrato.id} rotulo="Visualizar contrato" />
                       </div>
 
                       <div className="flex items-end justify-between border-t pt-3">

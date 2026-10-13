@@ -2,6 +2,8 @@ import {
   BanknoteIcon,
   CalendarClockIcon,
   CalendarRangeIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
   FileTextIcon,
   HandCoinsIcon,
   ShieldCheckIcon,
@@ -28,6 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PapelContrato } from "@/features/contratos/components/papel-contrato";
+import { montarDocumentoContrato } from "@/features/contratos/documento";
 import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog";
 import { ReajusteDialog } from "@/features/contratos/components/reajuste-dialog";
 import { obterContrato } from "@/features/contratos/queries";
@@ -51,7 +55,7 @@ export const metadata: Metadata = { title: "Contrato" };
 
 export default async function ContratoDetalhePage(props: PageProps<"/contratos/[id]">) {
   const { id } = await props.params;
-  const contrato = await obterContrato(id);
+  const [contrato, documento] = await Promise.all([obterContrato(id), montarDocumentoContrato(id)]);
   if (!contrato) notFound();
 
   const status = STATUS_CONTRATO[contrato.status];
@@ -153,13 +157,42 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
         </Badge>
       </div>
 
-      <Tabs defaultValue="cobrancas">
+      <Tabs defaultValue="contrato">
         <TabsList>
+          <TabsTrigger value="contrato">Contrato</TabsTrigger>
           <TabsTrigger value="cobrancas">Cobranças ({contrato.cobrancas.length})</TabsTrigger>
           <TabsTrigger value="reajustes">Reajustes ({contrato.reajustes.length})</TabsTrigger>
           <TabsTrigger value="vistorias">Vistorias ({contrato.vistorias.length})</TabsTrigger>
           <TabsTrigger value="arquivos">Arquivos ({contrato.arquivos.length})</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="contrato" className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
+              Visualização do contrato como será impresso
+              {documento ? ` · ${documento.modeloNome}` : ""}.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/api/pdf/contrato/${contrato.id}`} target="_blank" rel="noreferrer">
+                  <ExternalLinkIcon /> Abrir PDF
+                </a>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/api/pdf/contrato/${contrato.id}?download=1`}>
+                  <DownloadIcon /> Baixar PDF
+                </a>
+              </Button>
+            </div>
+          </div>
+          {documento ? (
+            <div className="rounded-xl bg-muted/60 p-3 sm:p-6">
+              <PapelContrato titulo={documento.titulo} locadorNome={documento.locadorNome} conteudo={documento.conteudo} />
+            </div>
+          ) : (
+            <p className="py-6 text-center text-sm text-muted-foreground">Não foi possível montar o contrato.</p>
+          )}
+        </TabsContent>
 
         <TabsContent value="cobrancas" className="space-y-3">
           <div className="flex justify-end">

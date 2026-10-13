@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { CardOverlayLink } from "@/components/shared/imovel-link";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { ContratoPreviewDialog } from "@/features/contratos/components/contrato-preview-dialog";
 import { Card } from "@/components/ui/card";
 import { formatDate, today } from "@/lib/dates";
 import { formatNumeroContrato } from "@/lib/format";
@@ -111,13 +112,16 @@ export function AbaContratos({ contratos }: { contratos: ImovelDetalhe["contrato
                 ))}
               </div>
 
-              <div className="flex items-center justify-between border-t pt-3 text-sm font-semibold">
-                <Link
-                  href={`/financeiro/cobrancas/${contrato.id}`}
-                  className="pointer-events-auto relative inline-flex items-center gap-1.5 text-primary-ink hover:underline"
-                >
-                  <HandCoinsIcon className="size-4" /> Ver cobranças
-                </Link>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm font-semibold">
+                <span className="pointer-events-auto relative flex flex-wrap items-center gap-2">
+                  <ContratoPreviewDialog contratoId={contrato.id} rotulo="Visualizar" mostrarAbrir />
+                  <Link
+                    href={`/financeiro/cobrancas/${contrato.id}`}
+                    className="inline-flex items-center gap-1.5 text-primary-ink hover:underline"
+                  >
+                    <HandCoinsIcon className="size-4" /> Ver cobranças
+                  </Link>
+                </span>
                 <span className="inline-flex items-center gap-1 text-primary-ink">
                   Abrir contrato
                   <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-1" />
