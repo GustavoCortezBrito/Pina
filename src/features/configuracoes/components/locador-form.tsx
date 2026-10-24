@@ -8,6 +8,7 @@ import { useAction } from "@/components/shared/use-action";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
 import { salvarLocador } from "../actions";
 import { locadorSchema, type Locador } from "../schemas";
@@ -26,6 +27,15 @@ export function LocadorForm({ valores }: { valores: Locador }) {
       <FieldGroup className="grid gap-5 sm:grid-cols-2">
         <FormField control={form.control} name="nome" label="Nome do locador">
           {(field) => <Input {...field} id="locador-nome" />}
+        </FormField>
+        <FormField
+          control={form.control}
+          name="razaoSocial"
+          label="Razão social (para o contrato)"
+          description="Se vazio, usa o nome do locador."
+          className="sm:col-span-2"
+        >
+          {(field) => <Input {...field} id="locador-razao" />}
         </FormField>
         <FormField control={form.control} name="documento" label="CPF/CNPJ">
           {(field) => <Input {...field} id="locador-documento" />}
@@ -53,6 +63,15 @@ export function LocadorForm({ valores }: { valores: Locador }) {
         </FormField>
         <FormField control={form.control} name="chavePix" label="Chave Pix">
           {(field) => <Input {...field} id="locador-pix" />}
+        </FormField>
+        <FormField
+          control={form.control}
+          name="qualificacao"
+          label="Qualificação do locador no contrato"
+          description="Texto completo que abre o contrato (empresa, endereço, NIRE, CNPJ, representante legal). Se vazio, o sistema monta com os dados acima."
+          className="sm:col-span-2"
+        >
+          {(field) => <Textarea {...field} id="locador-qualificacao" rows={6} />}
         </FormField>
       </FieldGroup>
       <Button type="submit" disabled={pending}>

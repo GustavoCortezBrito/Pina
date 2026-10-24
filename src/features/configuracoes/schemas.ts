@@ -3,6 +3,8 @@ import { IndiceReajuste } from "@/generated/prisma/enums";
 
 export const locadorSchema = z.object({
   nome: z.string().trim().min(2, "Informe o nome do locador."),
+  razaoSocial: z.string().trim().max(200),
+  qualificacao: z.string().trim().max(2500),
   documento: z.string().trim(),
   endereco: z.string().trim(),
   cidade: z.string().trim(),
@@ -49,6 +51,8 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   locador: {
     nome: "Pina's Empreendimentos",
+    razaoSocial: "",
+    qualificacao: "",
     documento: "",
     endereco: "",
     cidade: "Barretos/SP",

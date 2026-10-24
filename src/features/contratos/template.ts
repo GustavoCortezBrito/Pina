@@ -33,6 +33,40 @@ function garantiaTexto(contrato: ContratoParaPdf, fiadorNome?: string): string {
   }
 }
 
+const ORDINAIS = ["DÉCIMA SEXTA", "DÉCIMA SÉTIMA", "DÉCIMA OITAVA", "DÉCIMA NONA", "VIGÉSIMA"];
+
+/** Cláusula de garantia (a 16ª). A lei permite uma só modalidade por contrato (Lei 8.245/91, art. 37), então é sempre uma cláusula. */
+function clausulasGarantia(
+  contrato: ContratoParaPdf,
+  fiador?: ContratoParaPdf["partes"][number]["pessoa"],
+): { texto: string; quantidade: number } {
+  const clausulas: string[] = [];
+  const rotulo = () => `CLÁUSULA ${ORDINAIS[clausulas.length]} -`;
+
+  if (contrato.garantia === "FIADOR" && fiador) {
+    clausulas.push(`${rotulo()} Assina também este contrato, como FIADOR, ${qualificacaoPessoa(fiador)}, principal pagador, solidariamente com o LOCATÁRIO por todas as obrigações neste exaradas, ressaltando ainda que renunciem ao benefício a que se refere o art. 827 do Código Civil, bem como aos previstos nos arts. 835 e 838, do mesmo Código e aos do art. 794 do Código de Processo Civil e cujas responsabilidades perdurarão até a entrega real, efetiva e final das chaves do imóvel.`);
+  }
+  if (contrato.garantia === "CAUCAO" && contrato.caucaoValor) {
+    const meses = contrato.caucaoValor / contrato.valorAluguel;
+    const equivalente = Number.isInteger(meses)
+      ? `, equivalente a ${meses} (${numeroPorExtenso(meses)}) ${meses === 1 ? "mês" : "meses"} de aluguel`
+      : "";
+    clausulas.push(
+      `${rotulo()} O LOCATÁRIO concorda, desde já, em depositar a título de garantia a caução no valor de ${formatBRL(contrato.caucaoValor)} (${valorPorExtenso(contrato.caucaoValor)})${equivalente}. O depósito será feito em conta corrente.`,
+    );
+  }
+  if (clausulas.length === 0) clausulas.push(`${rotulo()} ${garantiaTexto(contrato, fiador?.nome)}`);
+  return { texto: clausulas.join("\n\n"), quantidade: clausulas.length };
+}
+
+function qualificacaoLocador(locador: Locador): string {
+  if (locador.qualificacao) return locador.qualificacao;
+  const nome = locador.razaoSocial || locador.nome || "—";
+  const doc = locador.documento ? `, inscrito(a) no CPF/CNPJ sob nº ${formatDocumento(locador.documento)}` : "";
+  const end = locador.endereco ? `, com endereço em ${locador.endereco}` : "";
+  return `${nome}${doc}${end}`;
+}
+
 export function montarVariaveisContrato(contrato: ContratoParaPdf, locador: Locador): Record<string, string> {
   const locatario = contrato.partes.find((p) => p.papel === "LOCATARIO")?.pessoa;
   const fiador = contrato.partes.find((p) => p.papel === "FIADOR")?.pessoa;
@@ -51,8 +85,12 @@ export function montarVariaveisContrato(contrato: ContratoParaPdf, locador: Loca
           .join(", ")}.`
       : "";
 
+  const garantias = clausulasGarantia(contrato, fiador);
+
   return {
     "locador.nome": locador.nome || "—",
+    "locador.razaoSocial": locador.razaoSocial || locador.nome || "—",
+    "locador.qualificacao": qualificacaoLocador(locador),
     "locador.documento": formatDocumento(locador.documento),
     "locador.endereco": locador.endereco || "—",
     "locador.cidade": locador.cidade || "Barretos/SP",
@@ -78,6 +116,7 @@ export function montarVariaveisContrato(contrato: ContratoParaPdf, locador: Loca
     "contrato.valorAluguel": formatBRL(contrato.valorAluguel),
     "contrato.valorAluguelExtenso": valorPorExtenso(contrato.valorAluguel),
     "contrato.diaVencimento": String(contrato.diaVencimento),
+    "contrato.diaVencimentoExtenso": numeroPorExtenso(contrato.diaVencimento),
     "contrato.formaPagamentoTexto": "mediante depósito, transferência ou Pix em conta indicada pelo LOCADOR",
     "contrato.encargosBloco": encargosBloco,
     "contrato.percMulta": formatPercent(Number(contrato.percMulta)),
@@ -85,6 +124,9 @@ export function montarVariaveisContrato(contrato: ContratoParaPdf, locador: Loca
     "contrato.indiceReajuste": INDICE_REAJUSTE[contrato.indiceReajuste],
     "contrato.garantiaTexto": garantiaTexto(contrato, fiador?.nome),
     "contrato.multaRescisoriaMeses": `${contrato.multaRescisoriaMeses} aluguel(éis)`,
+    "contrato.multaRescisoriaExtenso": `${String(contrato.multaRescisoriaMeses).padStart(2, "0")} (${numeroPorExtenso(contrato.multaRescisoriaMeses)}) ${contrato.multaRescisoriaMeses === 1 ? "mês" : "meses"}`,
+    "contrato.garantiaClausula": garantias.texto,
+    "contrato.numeroForo": ORDINAIS[garantias.quantidade],
 
     "data.hoje": formatDateLong(today()),
   };
