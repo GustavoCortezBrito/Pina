@@ -45,3 +45,7 @@ next-env.d.ts
 /storage/
 /src/generated/
 /.data/
+
+# Documentos com dados pessoais reais (nao versionar)
+Modelo_Contrato*.docx
+*.docx
