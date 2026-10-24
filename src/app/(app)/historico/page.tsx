@@ -27,6 +27,7 @@ import { ROLE_LABEL, normalizeRole } from "@/lib/permissions";
 import { STATUS_CONTRATO, STATUS_IMOVEL, STATUS_MANUTENCAO, type Tone } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { requireAccessPage } from "@/lib/session";
 
 const MAPAS_STATUS: Record<string, Record<string, { label: string; tone: Tone }>> = {
   Manutencao: STATUS_MANUTENCAO,
@@ -55,6 +56,7 @@ function extrairAlteracoes(dados: Record<string, unknown> | null): Alteracoes | 
 }
 
 export default async function HistoricoPage(props: PageProps<"/historico">) {
+  await requireAccessPage("historico");
   const params = await props.searchParams;
   const ler = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
 

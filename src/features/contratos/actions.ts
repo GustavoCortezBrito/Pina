@@ -7,9 +7,9 @@ import { calcularMultaRescisoria, isRescisao } from "@/features/contratos/servic
 import { runAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
-import { parseISODate, startOfMonth, today } from "@/lib/dates";
+import { diffDays, parseISODate, startOfMonth, today } from "@/lib/dates";
 import { nullIfEmpty } from "@/lib/form";
-import { sum } from "@/lib/money";
+import { prorate, sum } from "@/lib/money";
 import { requireAccess, requireAdmin } from "@/lib/session";
 import { AppError } from "@/lib/errors";
 import { getSettings } from "@/lib/settings";
@@ -233,6 +233,30 @@ export async function encerrarContrato(input: unknown) {
           if (cobranca.competencia > dataSaida && cobranca.status !== "PAGO") {
             await tx.cobranca.update({ where: { id: cobranca.id }, data: { status: "CANCELADO" } });
           }
+        }
+
+        // A cobrança do mês da saída ainda não paga passa a valer só pelos dias de uso (RN-04).
+        for (const cobranca of contrato.cobrancas) {
+          const noMesDaSaida =
+            cobranca.tipo === "ALUGUEL" &&
+            cobranca.status === "PENDENTE" &&
+            cobranca.periodoInicio <= dataSaida &&
+            dataSaida < cobranca.periodoFim;
+          if (!noMesDaSaida) continue;
+          const diasOriginais = diffDays(cobranca.periodoFim, cobranca.periodoInicio) + 1;
+          const diasDeUso = diffDays(dataSaida, cobranca.periodoInicio) + 1;
+          const valorAluguel = prorate(cobranca.valorAluguel, diasDeUso, diasOriginais);
+          const valorEncargos = prorate(cobranca.valorEncargos, diasDeUso, diasOriginais);
+          await tx.cobranca.update({
+            where: { id: cobranca.id },
+            data: {
+              periodoFim: dataSaida,
+              valorAluguel,
+              valorEncargos,
+              valorTotal: Math.max(0, valorAluguel + valorEncargos - cobranca.desconto),
+              proporcional: true,
+            },
+          });
         }
 
         if (rescisao && valorMulta && valorMulta > 0) {

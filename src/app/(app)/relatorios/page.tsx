@@ -17,6 +17,7 @@ import { PeriodoFilter } from "@/features/relatorios/components/periodo-filter";
 import { receitaDespesaPeriodo, resolverPeriodo, resultadoPorImovel } from "@/features/relatorios/queries";
 import { today } from "@/lib/dates";
 import { formatBRL } from "@/lib/money";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Relatórios" };
 
@@ -29,6 +30,7 @@ function opcoesAnos() {
 }
 
 export default async function RelatoriosPage(props: PageProps<"/relatorios">) {
+  await requireAccessPage("relatorios");
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
 

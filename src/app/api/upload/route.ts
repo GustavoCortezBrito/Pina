@@ -4,6 +4,7 @@ import type { CategoriaArquivo } from "@/generated/prisma/enums";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { detectFileType, processImage } from "@/lib/images";
+import { can, type Modulo } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
 
@@ -19,6 +20,16 @@ const ENTIDADES = {
 } as const;
 
 type Entidade = keyof typeof ENTIDADES;
+
+const MODULO_DA_ENTIDADE: Record<Entidade, Modulo> = {
+  imovel: "imoveis",
+  pessoa: "pessoas",
+  contrato: "contratos",
+  pagamento: "cobrancas",
+  despesa: "despesas",
+  manutencao: "manutencoes",
+  vistoria: "contratos",
+};
 
 const CATEGORIAS: CategoriaArquivo[] = [
   "FOTO",
@@ -69,6 +80,8 @@ export async function POST(request: Request) {
 
   if (!(entidade in ENTIDADES)) return erro("Entidade inválida.");
   if (!CATEGORIAS.includes(categoria)) return erro("Categoria inválida.");
+  if (!can(session.user.role, MODULO_DA_ENTIDADE[entidade])) return erro("Sem permissão para enviar arquivos aqui.", 403);
+  if (categoria !== "FOTO" && !can(session.user.role, "contratos")) return erro("Seu perfil só pode enviar fotos.", 403);
   if (!entidadeId || !(await entidadeExiste(entidade, entidadeId))) return erro("Registro não encontrado.", 404);
   if (arquivos.length === 0) return erro("Nenhum arquivo enviado.");
 

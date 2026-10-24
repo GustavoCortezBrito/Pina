@@ -8,10 +8,18 @@ import { STATUS_IMOVEL, TIPO_IMOVEL } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
 import type { ImovelResumo } from "../queries";
 
-export function ImovelCard({ imovel, index = 0 }: { imovel: ImovelResumo; index?: number }) {
+export function ImovelCard({
+  imovel,
+  index = 0,
+  mostrarInquilino = true,
+}: {
+  imovel: ImovelResumo;
+  index?: number;
+  mostrarInquilino?: boolean;
+}) {
   const status = STATUS_IMOVEL[imovel.status];
   const contrato = imovel.contratos[0];
-  const locatario = contrato?.partes[0]?.pessoa.nome;
+  const locatario = mostrarInquilino ? contrato?.partes[0]?.pessoa.nome : undefined;
 
   return (
     <Link

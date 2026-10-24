@@ -18,12 +18,14 @@ import { formatBRL } from "@/lib/money";
 import { getSettings } from "@/lib/settings";
 import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Cobranças do imóvel" };
 
 const TONE_ICON_BG = TONE_ICON;
 
 export default async function CobrancasDoContratoPage(props: PageProps<"/financeiro/cobrancas/[contratoId]">) {
+  await requireAccessPage("cobrancas");
   const { contratoId } = await props.params;
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
@@ -98,7 +100,7 @@ export default async function CobrancasDoContratoPage(props: PageProps<"/finance
 
                     <div className="min-w-0 flex-1 space-y-1">
                       <p className="truncate text-base font-semibold capitalize">
-                        {formatMonth(cobranca.competencia)}
+                        {cobranca.tipo === "MULTA_RESCISORIA" ? "Multa rescisória" : formatMonth(cobranca.competencia)}
                       </p>
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CalendarIcon className="size-3.5" />

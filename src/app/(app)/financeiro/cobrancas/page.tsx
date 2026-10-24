@@ -18,12 +18,14 @@ import type { Tone } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
 import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Cobranças" };
 
 const TONE_ICON_BG = TONE_ICON;
 
 export default async function CobrancasPage(props: PageProps<"/financeiro/cobrancas">) {
+  await requireAccessPage("cobrancas");
   const params = await props.searchParams;
   const q = typeof params.q === "string" ? params.q : undefined;
   const resumos = await resumoCobrancasPorContrato(q);

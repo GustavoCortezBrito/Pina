@@ -40,10 +40,12 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
   const [imovel, user] = await Promise.all([obterImovel(id), requireUser()]);
   if (!imovel) notFound();
 
-  const financeiro = await detalheFinanceiroImovel(id);
   const fotos = imovel.arquivos.filter((a) => a.categoria === "FOTO");
   const documentos = imovel.arquivos.filter((a) => a.categoria !== "FOTO");
   const admin = isAdmin(user);
+  const verInterno = can(user.role, "contratos"); // contratos, financeiro e documentos: só equipe de gestão
+  const verManutencoes = can(user.role, "manutencoes");
+  const financeiro = verInterno ? await detalheFinanceiroImovel(id) : null;
 
   return (
     <div className="space-y-6">
@@ -121,10 +123,10 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
         <TabsList>
           <TabsTrigger value="dados">Dados</TabsTrigger>
           <TabsTrigger value="fotos">Fotos ({fotos.length})</TabsTrigger>
-          <TabsTrigger value="documentos">Documentos ({documentos.length})</TabsTrigger>
-          <TabsTrigger value="contratos">Contratos ({imovel.contratos.length})</TabsTrigger>
-          <TabsTrigger value="financeiro">Financeiro</TabsTrigger>
-          <TabsTrigger value="manutencoes">Manutenções ({imovel.manutencoes.length})</TabsTrigger>
+          {verInterno && <TabsTrigger value="documentos">Documentos ({documentos.length})</TabsTrigger>}
+          {verInterno && <TabsTrigger value="contratos">Contratos ({imovel.contratos.length})</TabsTrigger>}
+          {verInterno && <TabsTrigger value="financeiro">Financeiro</TabsTrigger>}
+          {verManutencoes && <TabsTrigger value="manutencoes">Manutenções ({imovel.manutencoes.length})</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="dados" className="space-y-4">
@@ -134,10 +136,12 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 <p className="text-xs text-muted-foreground">Empreendimento</p>
                 <p className="text-sm">{imovel.empreendimento?.nome ?? "—"}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Proprietário</p>
-                <p className="text-sm">{imovel.proprietario?.nome ?? "Próprio"}</p>
-              </div>
+              {verInterno && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Proprietário</p>
+                  <p className="text-sm">{imovel.proprietario?.nome ?? "Próprio"}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-muted-foreground">Aluguel sugerido</p>
                 <p className="text-sm">{formatBRL(imovel.valorAluguel)}</p>
@@ -146,14 +150,18 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 <p className="text-xs text-muted-foreground">Condomínio</p>
                 <p className="text-sm">{formatBRL(imovel.valorCondominio)}</p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">IPTU (ano)</p>
-                <p className="text-sm">{formatBRL(imovel.valorIptuAnual)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Matrícula</p>
-                <p className="text-sm">{imovel.matricula ?? "—"}</p>
-              </div>
+              {verInterno && (
+                <>
+                  <div>
+                    <p className="text-xs text-muted-foreground">IPTU (ano)</p>
+                    <p className="text-sm">{formatBRL(imovel.valorIptuAnual)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Matrícula</p>
+                    <p className="text-sm">{imovel.matricula ?? "—"}</p>
+                  </div>
+                </>
+              )}
               {imovel.caracteristicas.length > 0 && (
                 <div className="col-span-2">
                   <p className="mb-1.5 text-xs text-muted-foreground">Características</p>
@@ -172,7 +180,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                   <p className="text-sm whitespace-pre-line">{imovel.descricao}</p>
                 </div>
               )}
-              {imovel.observacoes && (
+              {verInterno && imovel.observacoes && (
                 <div className="col-span-2">
                   <p className="text-xs text-muted-foreground">Observações internas</p>
                   <p className="text-sm whitespace-pre-line">{imovel.observacoes}</p>
@@ -194,27 +202,35 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
           <PhotoGallery fotos={fotos} />
         </TabsContent>
 
-        <TabsContent value="documentos" className="space-y-4">
-          <FileUploader
-            entidade="imovel"
-            entidadeId={imovel.id}
-            categoria="DOCUMENTO"
-            titulo="Matrícula, IPTU, contas..."
-          />
-          <FileList arquivos={documentos} />
-        </TabsContent>
+        {verInterno && (
+          <>
+            <TabsContent value="documentos" className="space-y-4">
+              <FileUploader
+                entidade="imovel"
+                entidadeId={imovel.id}
+                categoria="DOCUMENTO"
+                titulo="Matrícula, IPTU, contas..."
+              />
+              <FileList arquivos={documentos} />
+            </TabsContent>
 
-        <TabsContent value="contratos">
-          <AbaContratos contratos={imovel.contratos} />
-        </TabsContent>
+            <TabsContent value="contratos">
+              <AbaContratos contratos={imovel.contratos} />
+            </TabsContent>
 
-        <TabsContent value="financeiro">
-          <AbaFinanceiro imovelId={imovel.id} dados={financeiro} verDespesas={can(user.role, "despesas")} />
-        </TabsContent>
+            {financeiro && (
+              <TabsContent value="financeiro">
+                <AbaFinanceiro imovelId={imovel.id} dados={financeiro} verDespesas={can(user.role, "despesas")} />
+              </TabsContent>
+            )}
+          </>
+        )}
 
-        <TabsContent value="manutencoes">
-          <AbaManutencoes manutencoes={imovel.manutencoes} verDespesas={can(user.role, "despesas")} />
-        </TabsContent>
+        {verManutencoes && (
+          <TabsContent value="manutencoes">
+            <AbaManutencoes manutencoes={imovel.manutencoes} verDespesas={can(user.role, "despesas")} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

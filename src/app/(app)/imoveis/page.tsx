@@ -17,6 +17,8 @@ import { opcoesEmpreendimentos } from "@/features/empreendimentos/queries";
 import { ImovelCard } from "@/features/imoveis/components/imovel-card";
 import { listarImoveis } from "@/features/imoveis/queries";
 import { options, STATUS_IMOVEL, TIPO_IMOVEL } from "@/lib/labels";
+import { can } from "@/lib/permissions";
+import { requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Imóveis" };
 
@@ -28,7 +30,7 @@ function enumOuIndefinido<T extends string>(
 }
 
 export default async function ImoveisPage(props: PageProps<"/imoveis">) {
-  const params = await props.searchParams;
+  const [params, user] = await Promise.all([props.searchParams, requireUser()]);
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
 
   const filtros = {
@@ -91,7 +93,7 @@ export default async function ImoveisPage(props: PageProps<"/imoveis">) {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {itens.map((imovel, index) => (
-              <ImovelCard key={imovel.id} imovel={imovel} index={index} />
+              <ImovelCard key={imovel.id} imovel={imovel} index={index} mostrarInquilino={can(user.role, "contratos")} />
             ))}
           </div>
           <Pagination page={page} pageCount={pageCount} total={total} label="imóveis" />

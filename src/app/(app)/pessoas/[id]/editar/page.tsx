@@ -5,10 +5,12 @@ import { PessoaForm } from "@/features/pessoas/components/pessoa-form";
 import { obterPessoa } from "@/features/pessoas/queries";
 import type { PessoaInput } from "@/features/pessoas/schemas";
 import { toISODate } from "@/lib/dates";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Editar pessoa" };
 
 export default async function EditarPessoaPage(props: PageProps<"/pessoas/[id]/editar">) {
+  await requireAccessPage("pessoas");
   const { id } = await props.params;
   const pessoa = await obterPessoa(id);
   if (!pessoa) notFound();

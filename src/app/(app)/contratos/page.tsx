@@ -24,11 +24,13 @@ import { options, PAPEL_CONTRATO, STATUS_CONTRATO } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
 import { TONE_CARD, TONE_ICON, TONE_TEXT } from "@/lib/tones";
 import { cn } from "@/lib/utils";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Contratos" };
 
 
 export default async function ContratosPage(props: PageProps<"/contratos">) {
+  await requireAccessPage("contratos");
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
   const statusParam = lerParam("status");

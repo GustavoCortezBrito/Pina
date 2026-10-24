@@ -19,6 +19,7 @@ import { excluirEmpreendimento } from "@/features/empreendimentos/actions";
 import { obterEmpreendimento } from "@/features/empreendimentos/queries";
 import { formatEndereco } from "@/lib/format";
 import { STATUS_IMOVEL, TIPO_IMOVEL } from "@/lib/labels";
+import { can } from "@/lib/permissions";
 import { isAdmin, requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Empreendimento" };
@@ -84,7 +85,7 @@ export default async function EmpreendimentoDetalhePage(props: PageProps<"/empre
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {empreendimento.imoveis.map((imovel, index) => {
             const status = STATUS_IMOVEL[imovel.status];
-            const locatario = imovel.contratos[0]?.partes[0]?.pessoa.nome;
+            const locatario = can(user.role, "contratos") ? imovel.contratos[0]?.partes[0]?.pessoa.nome : undefined;
             return (
               <Link
                 key={imovel.id}

@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { formatEndereco, formatNumeroContrato } from "@/lib/format";
 import { ReciboDocument } from "@/lib/pdf/recibo";
+import { can } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 
 export async function GET(request: Request, ctx: RouteContext<"/api/pdf/recibo/[cobrancaId]">) {
   const session = await getSession();
   if (!session) return new NextResponse("Não autorizado", { status: 401 });
+  if (!can(session.user.role, "cobrancas")) return new NextResponse("Sem permissão", { status: 403 });
 
   const { cobrancaId } = await ctx.params;
   const cobranca = await db.cobranca.findUnique({

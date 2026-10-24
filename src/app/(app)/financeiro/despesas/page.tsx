@@ -5,12 +5,13 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DespesasSecao } from "@/features/financeiro/despesas/components/despesas-secao";
 import { ManutencoesSecao } from "@/features/manutencoes/components/manutencoes-secao";
 import { can } from "@/lib/permissions";
-import { requireUser } from "@/lib/session";
+import { requireAccessPage, requireUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Despesas e manutenções" };
 
 export default async function DespesasPage(props: PageProps<"/financeiro/despesas">) {
+  await requireAccessPage("manutencoes");
   const [params, user] = await Promise.all([props.searchParams, requireUser()]);
   const verDespesas = can(user.role, "despesas");
 

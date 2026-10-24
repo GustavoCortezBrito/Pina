@@ -51,10 +51,12 @@ import {
 import { formatBRL, sum } from "@/lib/money";
 import { today } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Contrato" };
 
 export default async function ContratoDetalhePage(props: PageProps<"/contratos/[id]">) {
+  await requireAccessPage("contratos");
   const { id } = await props.params;
   const contratoBase = await obterContrato(id);
   if (!contratoBase) notFound();
@@ -238,7 +240,7 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   return (
                     <TableRow key={cobranca.id}>
                       <TableCell className="font-medium capitalize">
-                        {formatMonth(cobranca.competencia)}
+                        {cobranca.tipo === "MULTA_RESCISORIA" ? "Multa rescisória" : formatMonth(cobranca.competencia)}
                         <span className="block text-xs font-normal text-muted-foreground normal-case sm:hidden">
                           vence {formatDate(cobranca.vencimento)}
                         </span>

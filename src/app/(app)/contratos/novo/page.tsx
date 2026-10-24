@@ -4,10 +4,12 @@ import { ContratoWizard } from "@/features/contratos/components/contrato-wizard"
 import { opcoesImoveis } from "@/features/imoveis/queries";
 import { opcoesPessoas } from "@/features/pessoas/queries";
 import { getSettings } from "@/lib/settings";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Novo contrato" };
 
 export default async function NovoContratoPage() {
+  await requireAccessPage("contratos");
   const [imoveis, inquilinos, fiadores, settings] = await Promise.all([
     opcoesImoveis(true),
     opcoesPessoas("INQUILINO"),

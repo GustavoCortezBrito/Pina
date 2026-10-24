@@ -37,9 +37,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             className="pointer-events-none absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"
           />
         </header>
-        <main className="mx-auto w-full max-w-[1500px] min-w-0 flex-1 p-4 pb-10 md:p-6 md:pb-12">
+        <div className="mx-auto w-full max-w-[1500px] min-w-0 flex-1 p-4 pb-10 md:p-6 md:pb-12">
           <RouteTransition>{children}</RouteTransition>
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

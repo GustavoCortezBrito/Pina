@@ -19,6 +19,7 @@ import { PapelPessoa } from "@/generated/prisma/enums";
 import { listarPessoas } from "@/features/pessoas/queries";
 import { formatDocumento, formatPhone, whatsappLink } from "@/lib/format";
 import { options, PAPEL_PESSOA, TIPO_PESSOA } from "@/lib/labels";
+import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Pessoas" };
 
@@ -41,6 +42,7 @@ const TEMA_PAPEL: Record<PapelPessoa, { faixa: string; avatar: string; badge: st
 };
 
 export default async function PessoasPage(props: PageProps<"/pessoas">) {
+  await requireAccessPage("pessoas");
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
   const papelParam = lerParam("papel");

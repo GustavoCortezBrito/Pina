@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { can } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
 
@@ -11,6 +12,10 @@ export async function GET(request: Request, ctx: RouteContext<"/api/arquivos/[id
   const { id } = await ctx.params;
   const arquivo = await db.arquivo.findUnique({ where: { id } });
   if (!arquivo) return new NextResponse("Arquivo não encontrado", { status: 404 });
+  const fotoPublicavel = (arquivo.categoria === "FOTO" && arquivo.imovelId) || arquivo.categoria === "FOTO_PERFIL";
+  if (!fotoPublicavel && !can(session.user.role, "contratos")) {
+    return new NextResponse("Sem permissão", { status: 403 });
+  }
 
   const url = new URL(request.url);
   const usarThumb = url.searchParams.has("thumb") && arquivo.caminhoThumb;

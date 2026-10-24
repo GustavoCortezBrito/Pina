@@ -35,11 +35,12 @@ import {
 import { formatBRL } from "@/lib/money";
 import { TONE_CARD, TONE_ICON } from "@/lib/tones";
 import { cn } from "@/lib/utils";
-import { isAdmin, requireUser } from "@/lib/session";
+import { isAdmin, requireAccessPage, requireUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Pessoa" };
 
 export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]">) {
+  await requireAccessPage("pessoas");
   const { id } = await props.params;
   const [pessoa, user] = await Promise.all([obterPessoa(id), requireUser()]);
   if (!pessoa) notFound();
