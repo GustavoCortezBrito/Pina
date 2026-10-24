@@ -161,7 +161,11 @@ export async function aplicarReajuste(input: unknown) {
             valorNovo,
           },
         });
-        await tx.contrato.update({ where: { id: contrato.id }, data: { valorAluguel: valorNovo } });
+        // Reajuste com vigência futura: o valor do contrato só muda quando a data chegar;
+        // as cobranças a partir da vigência já saem com o valor novo.
+        if (competenciaInicio <= new Date()) {
+          await tx.contrato.update({ where: { id: contrato.id }, data: { valorAluguel: valorNovo } });
+        }
 
         for (const cobranca of contrato.cobrancas) {
           if (cobranca.competencia < competenciaInicio) continue;
