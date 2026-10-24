@@ -34,6 +34,7 @@ export async function listarContratos(filtros: FiltrosContrato) {
           orderBy: { principal: "desc" },
           select: { papel: true, pessoa: { select: { id: true, nome: true } } },
         },
+        _count: { select: { arquivos: { where: { categoria: "CONTRATO_ASSINADO" } } } },
       },
       skip: (page - 1) * CONTRATOS_POR_PAGINA,
       take: CONTRATOS_POR_PAGINA,

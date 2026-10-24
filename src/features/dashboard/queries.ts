@@ -140,6 +140,7 @@ export async function reajustesProximos(dias = 30) {
       dataInicio: true,
       dataFim: true,
       indiceReajuste: true,
+      reajustesAnteriores: true,
       imovel: { select: { codigo: true } },
       partes: { where: { papel: "LOCATARIO" }, take: 1, select: { pessoa: { select: { nome: true } } } },
       _count: { select: { reajustes: true } },
@@ -156,7 +157,7 @@ export async function reajustesProximos(dias = 30) {
         dataInicio: c.dataInicio,
         dataFim: c.dataFim,
         indice: c.indiceReajuste,
-        reajustesAplicados: c._count.reajustes,
+        reajustesAplicados: c._count.reajustes + c.reajustesAnteriores,
       }),
     }))
     .filter((c): c is typeof c & { data: Date } => c.data != null && c.data <= limite)

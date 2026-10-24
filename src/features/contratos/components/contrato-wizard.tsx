@@ -1,9 +1,20 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, PlusIcon, SendIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  FilePlus2Icon,
+  FileSignatureIcon,
+  FileUpIcon,
+  PlusIcon,
+  SendIcon,
+  XIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 import { useFieldArray, useForm, useWatch, type FieldPath } from "react-hook-form";
 import { applyServerErrors, FormField } from "@/components/shared/form-field";
 import { Combobox, type ComboboxOption } from "@/components/shared/combobox";
@@ -33,7 +44,7 @@ import {
 } from "@/components/ui/table";
 import { criarContrato } from "@/features/contratos/actions";
 import { gerarCobrancas } from "@/features/contratos/services/cobrancas";
-import { parseISODate, toISODate, today } from "@/lib/dates";
+import { parseISODate, startOfMonth, toISODate, today } from "@/lib/dates";
 import { FINALIDADE, INDICE_REAJUSTE, options, TIPO_GARANTIA } from "@/lib/labels";
 import { formatBRL, sum } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -42,9 +53,19 @@ import { contratoSchema, type ContratoInput } from "../schemas";
 const ETAPAS = ["Imóvel", "Partes", "Condições", "Revisão"] as const;
 
 const CAMPOS_POR_ETAPA: FieldPath<ContratoInput>[][] = [
-  ["imovelId", "finalidade"],
+  ["origem", "imovelId", "finalidade"],
   ["locatarioId", "fiadorId", "garantia", "caucaoValor", "seguradora", "apolice"],
-  ["dataInicio", "prazoMeses", "valorAluguel", "diaVencimento", "indiceReajuste", "encargos"],
+  [
+    "dataInicio",
+    "prazoMeses",
+    "valorAluguel",
+    "diaVencimento",
+    "indiceReajuste",
+    "encargos",
+    "numeroOriginal",
+    "primeiraCobranca",
+    "reajustesAnteriores",
+  ],
   [],
 ];
 
@@ -70,6 +91,10 @@ export function ContratoWizard({
   const form = useForm<ContratoInput>({
     resolver: zodResolver(contratoSchema),
     defaultValues: {
+      origem: "NOVO",
+      numeroOriginal: "",
+      primeiraCobranca: "",
+      reajustesAnteriores: 0,
       imovelId: "",
       finalidade: "RESIDENCIAL",
       locatarioId: "",
@@ -91,12 +116,16 @@ export function ContratoWizard({
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "encargos" });
   const garantia = useWatch({ control: form.control, name: "garantia" });
+  const origem = useWatch({ control: form.control, name: "origem" });
+  const existente = origem === "EXISTENTE";
+  const [arquivo, setArquivo] = React.useState<File | null>(null);
+  const inputArquivo = React.useRef<HTMLInputElement>(null);
   const valores = useWatch({ control: form.control });
 
   const preview = React.useMemo(() => {
     const dataInicio = parseISODate(valores.dataInicio);
     if (!dataInicio || !valores.valorAluguel || !valores.prazoMeses) return null;
-    return gerarCobrancas({
+    const todas = gerarCobrancas({
       dataInicio,
       prazoMeses: valores.prazoMeses,
       diaVencimento: valores.diaVencimento ?? 10,
@@ -104,6 +133,9 @@ export function ContratoWizard({
       valorEncargos: sum((valores.encargos ?? []).map((e) => e?.valor)),
       aluguelAntecipado: valores.aluguelAntecipado ?? false,
     });
+    if (valores.origem !== "EXISTENTE") return todas;
+    const desde = startOfMonth(parseISODate(valores.primeiraCobranca) ?? today());
+    return todas.filter((c) => c.competencia >= desde);
   }, [valores]);
 
   async function avancar() {
@@ -111,10 +143,35 @@ export function ContratoWizard({
     if (valido) setEtapa((e) => Math.min(ETAPAS.length - 1, e + 1));
   }
 
+  async function enviarAssinado(contratoId: string, file: File) {
+    const form = new FormData();
+    form.set("entidade", "contrato");
+    form.set("entidadeId", contratoId);
+    form.set("categoria", "CONTRATO_ASSINADO");
+    form.append("arquivos", file);
+    try {
+      const resposta = await fetch("/api/upload", { method: "POST", body: form });
+      const dados = (await resposta.json()) as { ok: boolean; error?: string };
+      if (!resposta.ok || !dados.ok) toast.error(`Contrato cadastrado, mas o arquivo não subiu: ${dados.error ?? "tente de novo na aba Arquivos."}`);
+    } catch {
+      toast.error("Contrato cadastrado, mas o arquivo não subiu. Anexe de novo na aba Arquivos do contrato.");
+    }
+  }
+
+  function escolherOrigem(valor: "NOVO" | "EXISTENTE") {
+    form.setValue("origem", valor);
+    if (valor === "EXISTENTE" && !form.getValues("primeiraCobranca")) {
+      form.setValue("primeiraCobranca", toISODate(startOfMonth(today())));
+    }
+  }
+
   async function finalizar() {
     const dados = form.getValues();
     const result = await run(() => criarContrato(dados), {
-      onSuccess: ({ id }) => router.push(`/contratos/${id}`),
+      onSuccess: async ({ id }) => {
+        if (arquivo) await enviarAssinado(id, arquivo);
+        router.push(`/contratos/${id}`);
+      },
     });
     if (!result.ok) applyServerErrors(form, result);
   }
@@ -163,6 +220,52 @@ export function ContratoWizard({
       <Card key={etapa} className="animate-fade-up">
         <CardContent className="space-y-6">
           {etapa === 0 && (
+            <div className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Como cadastrar o contrato">
+                {(
+                  [
+                    {
+                      valor: "NOVO" as const,
+                      icon: FilePlus2Icon,
+                      titulo: "Novo contrato",
+                      texto: "Vou gerar o contrato pelo sistema, com o modelo, e depois imprimir para assinar.",
+                    },
+                    {
+                      valor: "EXISTENTE" as const,
+                      icon: FileSignatureIcon,
+                      titulo: "Contrato que já existe",
+                      texto: "Já está assinado. Quero cadastrar para controlar vencimentos e cobranças, e anexar o arquivo.",
+                    },
+                  ] as const
+                ).map(({ valor, icon: Icon, titulo, texto }) => (
+                  <button
+                    key={valor}
+                    type="button"
+                    role="radio"
+                    aria-checked={origem === valor}
+                    onClick={() => escolherOrigem(valor)}
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border p-4 text-left transition-all",
+                      origem === valor
+                        ? "border-primary bg-primary/8 ring-2 ring-primary/40"
+                        : "hover:border-primary/50 hover:bg-muted/50",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                        origem === valor ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                      )}
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{titulo}</span>
+                      <span className="text-sm text-muted-foreground">{texto}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
             <FieldGroup className="grid gap-5 sm:grid-cols-2">
               <FormField control={form.control} name="imovelId" label="Imóvel">
                 {(field) => (
@@ -192,6 +295,7 @@ export function ContratoWizard({
                 )}
               </FormField>
             </FieldGroup>
+            </div>
           )}
 
           {etapa === 1 && (
@@ -318,6 +422,42 @@ export function ContratoWizard({
                 </FormField>
               </FieldGroup>
 
+              {existente && (
+                <div className="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+                  <p className="text-sm">
+                    <strong>Contrato que já existe:</strong> informe a data de início real e o aluguel{" "}
+                    <strong>de hoje</strong>. O sistema só cobra a partir do mês que você escolher abaixo; os meses
+                    anteriores não viram cobranças atrasadas.
+                  </p>
+                  <FieldGroup className="grid gap-5 sm:grid-cols-3">
+                    <FormField
+                      control={form.control}
+                      name="primeiraCobranca"
+                      label="Cobrar pelo sistema a partir de"
+                      description="Primeiro mês a controlar aqui."
+                    >
+                      {(field) => <Input {...field} type="date" />}
+                    </FormField>
+                    <FormField
+                      control={form.control}
+                      name="reajustesAnteriores"
+                      label="Reajustes já aplicados"
+                      description="Quantas vezes o aluguel já foi reajustado."
+                    >
+                      {(field) => <NumberInput {...field} min={0} onChange={(v) => field.onChange(v ?? 0)} />}
+                    </FormField>
+                    <FormField
+                      control={form.control}
+                      name="numeroOriginal"
+                      label="Nº do contrato (opcional)"
+                      description="Como ele é chamado hoje."
+                    >
+                      {(field) => <Input {...field} />}
+                    </FormField>
+                  </FieldGroup>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <p className="text-sm font-medium">Encargos cobrados junto com o aluguel</p>
                 {fields.map((item, index) => (
@@ -381,6 +521,50 @@ export function ContratoWizard({
                 </div>
               </div>
 
+              <div
+                className={cn(
+                  "space-y-2 rounded-xl border p-4",
+                  existente ? "border-primary/40 bg-primary/5" : "border-dashed",
+                )}
+              >
+                <p className="flex items-center gap-2 text-sm font-semibold">
+                  <FileUpIcon className="size-4 text-primary-ink" />
+                  {existente ? "Contrato assinado (recomendado)" : "Contrato assinado (opcional, pode anexar depois)"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  PDF, foto ou documento. Fica guardado na aba Arquivos do contrato para consulta.
+                </p>
+                <input
+                  ref={inputArquivo}
+                  type="file"
+                  accept="application/pdf,.doc,.docx,.odt,image/jpeg,image/png"
+                  className="sr-only"
+                  onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => inputArquivo.current?.click()}>
+                    <FileUpIcon /> {arquivo ? "Trocar arquivo" : "Escolher arquivo"}
+                  </Button>
+                  {arquivo && (
+                    <span className="flex items-center gap-1 text-sm font-medium">
+                      {arquivo.name}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="Remover arquivo"
+                        onClick={() => {
+                          setArquivo(null);
+                          if (inputArquivo.current) inputArquivo.current.value = "";
+                        }}
+                      >
+                        <XIcon />
+                      </Button>
+                    </span>
+                  )}
+                </div>
+              </div>
+
               {preview && (
                 <div>
                   <p className="mb-2 text-sm font-medium">
@@ -439,7 +623,7 @@ export function ContratoWizard({
         ) : (
           <Button type="button" size="lg" disabled={pending} onClick={finalizar}>
             {pending ? <Spinner /> : <SendIcon />}
-            Criar contrato
+            {existente ? "Cadastrar contrato" : "Criar contrato"}
           </Button>
         )}
       </div>

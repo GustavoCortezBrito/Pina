@@ -12,9 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { ArquivoAssinadoView } from "./arquivo-assinado";
 import { PapelContrato } from "./papel-contrato";
 
-type Documento = { titulo: string; locadorNome: string; conteudo: string; modeloNome: string };
+type Gerado = { tipo?: undefined; titulo: string; locadorNome: string; conteudo: string; modeloNome: string };
+type Anexado = {
+  tipo: "arquivo";
+  titulo: string;
+  arquivo: { id: string; mime: string; nomeOriginal: string } | null;
+};
+type Documento = Gerado | Anexado;
 
 /** Botão "Visualizar" que abre o contrato em uma janela, como ele sai no PDF. */
 export function ContratoPreviewDialog({
@@ -68,7 +75,9 @@ export function ContratoPreviewDialog({
             <FileSignatureIcon className="size-5 text-primary-ink" /> {doc?.titulo ?? "Contrato"}
           </DialogTitle>
           <DialogDescription>
-            Visualização do contrato como será impresso{doc ? ` · ${doc.modeloNome}` : ""}.
+            {doc?.tipo === "arquivo"
+              ? "Contrato assinado que foi anexado ao sistema."
+              : `Visualização do contrato como será impresso${doc ? ` · ${doc.modeloNome}` : ""}.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -79,6 +88,8 @@ export function ContratoPreviewDialog({
             <div className="flex h-64 items-center justify-center text-muted-foreground">
               <Loader2Icon className="mr-2 size-5 animate-spin" /> Carregando contrato...
             </div>
+          ) : doc.tipo === "arquivo" ? (
+            <ArquivoAssinadoView contratoId={contratoId} arquivo={doc.arquivo} altura="h-[60vh]" />
           ) : (
             <PapelContrato titulo={doc.titulo} locadorNome={doc.locadorNome} conteudo={doc.conteudo} />
           )}
@@ -92,11 +103,13 @@ export function ContratoPreviewDialog({
               </Link>
             </Button>
           )}
-          <Button variant="outline" asChild>
-            <a href={`/api/pdf/contrato/${contratoId}?download=1`}>
-              <DownloadIcon /> Baixar PDF
-            </a>
-          </Button>
+          {doc?.tipo !== "arquivo" && (
+            <Button variant="outline" asChild>
+              <a href={`/api/pdf/contrato/${contratoId}?download=1`}>
+                <DownloadIcon /> Baixar PDF
+              </a>
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>

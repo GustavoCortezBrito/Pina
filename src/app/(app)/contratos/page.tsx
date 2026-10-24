@@ -112,7 +112,14 @@ export default async function ContratosPage(props: PageProps<"/contratos">) {
                         >
                           <FileSignatureIcon className="size-5" />
                         </span>
-                        <StatusBadge label={status.label} tone={status.tone} />
+                        <span className="flex flex-col items-end gap-1">
+                          <StatusBadge label={status.label} tone={status.tone} />
+                          {contrato.status === "ATIVO" && contrato._count.arquivos === 0 && (
+                            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary-ink ring-1 ring-primary/35">
+                              Sem cópia assinada
+                            </span>
+                          )}
+                        </span>
                       </div>
 
                       <div className="min-w-0 flex-1 space-y-1">

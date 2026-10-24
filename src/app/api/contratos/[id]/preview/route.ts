@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { montarDocumentoContrato } from "@/features/contratos/documento";
+import { db } from "@/lib/db";
 import { can } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 
@@ -10,6 +11,25 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/contratos/[
   if (!can(session.user.role, "contratos")) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const { id } = await ctx.params;
+  const importado = await db.contrato.findUnique({
+    where: { id },
+    select: {
+      importado: true,
+      numero: true,
+      arquivos: {
+        where: { categoria: "CONTRATO_ASSINADO" },
+        orderBy: { criadoEm: "desc" },
+        take: 1,
+        select: { id: true, mime: true, nomeOriginal: true },
+      },
+    },
+  });
+  if (importado?.importado) {
+    return NextResponse.json(
+      { tipo: "arquivo", titulo: `Contrato nº ${String(importado.numero).padStart(4, "0")}`, arquivo: importado.arquivos[0] ?? null },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
+  }
   const doc = await montarDocumentoContrato(id);
   if (!doc) return NextResponse.json({ error: "Contrato não encontrado" }, { status: 404 });
 

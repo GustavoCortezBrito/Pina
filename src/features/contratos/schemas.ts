@@ -1,13 +1,21 @@
 import { z } from "zod";
 import { Finalidade, IndiceReajuste, TipoGarantia } from "@/generated/prisma/enums";
-import { dataISO, texto } from "@/lib/form";
+import { dataISO, dataISOOpcional, texto } from "@/lib/form";
 
 export const contratoEncargoSchema = z.object({
   descricao: z.string().trim().min(1).max(60),
   valor: z.number().int().min(0),
 });
 
+export const ORIGENS_CONTRATO = ["NOVO", "EXISTENTE"] as const;
+
 export const contratoSchema = z.object({
+  /** NOVO: contrato feito pelo sistema. EXISTENTE: já assinado, cadastrado só para controle. */
+  origem: z.enum(ORIGENS_CONTRATO),
+  numeroOriginal: texto(40),
+  /** Só para contrato existente: primeira competência a cobrar pelo sistema (meses anteriores ficam de fora). */
+  primeiraCobranca: dataISOOpcional,
+  reajustesAnteriores: z.number().int().min(0).max(30),
   imovelId: z.string().min(1, "Selecione um imóvel."),
   finalidade: z.enum(Finalidade),
 

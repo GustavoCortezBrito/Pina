@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArquivoAssinadoView } from "@/features/contratos/components/arquivo-assinado";
 import { PapelContrato } from "@/features/contratos/components/papel-contrato";
 import { montarDocumentoContrato } from "@/features/contratos/documento";
 import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog";
@@ -55,8 +56,11 @@ export const metadata: Metadata = { title: "Contrato" };
 
 export default async function ContratoDetalhePage(props: PageProps<"/contratos/[id]">) {
   const { id } = await props.params;
-  const [contrato, documento] = await Promise.all([obterContrato(id), montarDocumentoContrato(id)]);
-  if (!contrato) notFound();
+  const contratoBase = await obterContrato(id);
+  if (!contratoBase) notFound();
+  const contrato = contratoBase;
+  const documento = contrato.importado ? null : await montarDocumentoContrato(id);
+  const assinado = contrato.arquivos.find((a) => a.categoria === "CONTRATO_ASSINADO") ?? null;
 
   const status = STATUS_CONTRATO[contrato.status];
   const hoje = today();
@@ -70,6 +74,14 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
           <span className="flex flex-wrap items-center gap-2">
             Contrato nº {formatNumeroContrato(contrato.numero)}
             <StatusBadge label={status.label} tone={status.tone} />
+            {contrato.importado && (
+              <Badge variant="outline" className="bg-card">
+                Contrato existente{contrato.numeroOriginal ? ` · nº ${contrato.numeroOriginal}` : ""}
+              </Badge>
+            )}
+            {contrato.status === "ATIVO" && !assinado && (
+              <Badge className="bg-primary/15 text-primary-ink ring-1 ring-primary/35">Sem cópia assinada</Badge>
+            )}
           </span>
         }
         description={
@@ -90,7 +102,7 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                   indiceReajuste={contrato.indiceReajuste}
                   dataInicio={contrato.dataInicio}
                   dataFim={contrato.dataFim}
-                  reajustesAplicados={contrato.reajustes.length}
+                  reajustesAplicados={contrato.reajustes.length + contrato.reajustesAnteriores}
                 />
                 <EncerrarDialog
                   contratoId={contrato.id}
@@ -167,6 +179,10 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
         </TabsList>
 
         <TabsContent value="contrato" className="space-y-3">
+          {contrato.importado ? (
+            <ArquivoAssinadoView contratoId={contrato.id} arquivo={assinado} />
+          ) : (
+            <>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">
               Visualização do contrato como será impresso
@@ -191,6 +207,8 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
             </div>
           ) : (
             <p className="py-6 text-center text-sm text-muted-foreground">Não foi possível montar o contrato.</p>
+          )}
+            </>
           )}
         </TabsContent>
 

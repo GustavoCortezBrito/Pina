@@ -7,7 +7,7 @@ import { calcularMultaRescisoria, isRescisao } from "@/features/contratos/servic
 import { runAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
-import { parseISODate, today } from "@/lib/dates";
+import { parseISODate, startOfMonth, today } from "@/lib/dates";
 import { nullIfEmpty } from "@/lib/form";
 import { sum } from "@/lib/money";
 import { requireAccess, requireAdmin } from "@/lib/session";
@@ -36,17 +36,25 @@ export async function criarContrato(input: unknown) {
       const imovel = await db.imovel.findUnique({ where: { id: dados.imovelId } });
       if (!imovel) throw new AppError("Imóvel não encontrado.");
 
+      const existente = dados.origem === "EXISTENTE";
+      // Contrato antigo que já terminou entra só como histórico (encerrado), sem ocupar o imóvel.
+      const jaTerminou = existente && calcularDataFim(dataInicio, dados.prazoMeses) < today();
+      const status = jaTerminou ? ("ENCERRADO" as const) : ("ATIVO" as const);
+
       const ativoExistente = await db.contrato.findFirst({
         where: { imovelId: dados.imovelId, status: "ATIVO" },
         select: { numero: true },
       });
-      if (ativoExistente) {
+      if (ativoExistente && status === "ATIVO") {
         throw new AppError(`Este imóvel já tem o contrato nº ${ativoExistente.numero} ativo.`);
       }
 
       const dataFim = calcularDataFim(dataInicio, dados.prazoMeses);
       const encargos = dados.encargos.filter((e) => e.descricao.trim() && e.valor > 0);
       const valorEncargos = sum(encargos.map((e) => e.valor));
+      const primeiraCompetencia = existente
+        ? startOfMonth(parseISODate(dados.primeiraCobranca) ?? today())
+        : null;
       const cobrancasPrevistas = gerarCobrancas({
         dataInicio,
         prazoMeses: dados.prazoMeses,
@@ -54,7 +62,7 @@ export async function criarContrato(input: unknown) {
         valorAluguel: dados.valorAluguel,
         valorEncargos,
         aluguelAntecipado: dados.aluguelAntecipado,
-      });
+      }).filter((c) => !primeiraCompetencia || c.competencia >= primeiraCompetencia);
 
       const modeloPadrao = await db.modeloContrato.findFirst({
         where: { finalidade: dados.finalidade, padrao: true, ativo: true },
@@ -63,7 +71,10 @@ export async function criarContrato(input: unknown) {
       const contrato = await db.$transaction(async (tx) => {
         const criado = await tx.contrato.create({
           data: {
-            status: "ATIVO",
+            status,
+            importado: existente,
+            numeroOriginal: existente ? nullIfEmpty(dados.numeroOriginal) : null,
+            reajustesAnteriores: existente ? dados.reajustesAnteriores : 0,
             finalidade: dados.finalidade,
             imovelId: dados.imovelId,
             dataInicio,
@@ -78,7 +89,7 @@ export async function criarContrato(input: unknown) {
             caucaoValor: dados.garantia === "CAUCAO" ? dados.caucaoValor : null,
             seguradora: dados.garantia === "SEGURO_FIANCA" ? nullIfEmpty(dados.seguradora) : null,
             apolice: dados.garantia === "SEGURO_FIANCA" ? nullIfEmpty(dados.apolice) : null,
-            modeloId: modeloPadrao?.id,
+            modeloId: existente ? null : modeloPadrao?.id,
             observacoes: nullIfEmpty(dados.observacoes),
             criadoPorId: user.id,
             partes: {
@@ -94,7 +105,9 @@ export async function criarContrato(input: unknown) {
           },
         });
 
-        await tx.imovel.update({ where: { id: dados.imovelId }, data: { status: "ALUGADO" } });
+        if (status === "ATIVO") {
+          await tx.imovel.update({ where: { id: dados.imovelId }, data: { status: "ALUGADO" } });
+        }
 
         return criado;
       });
@@ -102,7 +115,7 @@ export async function criarContrato(input: unknown) {
       await audit({ usuarioId: user.id, acao: "CREATE", entidade: "Contrato", entidadeId: contrato.id });
       return { id: contrato.id };
     },
-    { message: "Contrato criado e cobranças geradas." },
+    { message: "Contrato cadastrado." },
   );
 }
 
@@ -133,7 +146,7 @@ export async function aplicarReajuste(input: unknown) {
           dataInicio: contrato.dataInicio,
           dataFim: contrato.dataFim,
           indice: contrato.indiceReajuste,
-          reajustesAplicados: contrato.reajustes.length,
+          reajustesAplicados: contrato.reajustes.length + contrato.reajustesAnteriores,
         }) ?? dataAplicacao;
 
       await db.$transaction(async (tx) => {
@@ -294,7 +307,7 @@ export async function obterSugestaoReajuste(contratoId: string) {
     dataInicio: contrato.dataInicio,
     dataFim: contrato.dataFim,
     indice: contrato.indiceReajuste,
-    reajustesAplicados: contrato.reajustes.length,
+    reajustesAplicados: contrato.reajustes.length + contrato.reajustesAnteriores,
   });
   return {
     dataSugerida: sugestao ?? today(),

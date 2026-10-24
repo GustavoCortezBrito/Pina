@@ -325,6 +325,11 @@ model Contrato {
   modeloId    String?
   modelo      ModeloContrato? @relation(fields: [modeloId], references: [id], onDelete: SetNull)
   observacoes String?
+
+  // Contrato que já existia (assinado fora do sistema) e foi cadastrado só para controle.
+  importado           Boolean @default(false)
+  numeroOriginal      String? // número que o contrato já tinha
+  reajustesAnteriores Int     @default(0) // reajustes aplicados antes de entrar no sistema
   criadoPorId String?
 
   partes    ContratoParte[]
