@@ -13,6 +13,7 @@ import { prorate, sum } from "@/lib/money";
 import { requireAccess, requireAdmin } from "@/lib/session";
 import { AppError } from "@/lib/errors";
 import { getSettings } from "@/lib/settings";
+import { storage } from "@/lib/storage";
 import { contratoSchema } from "./schemas";
 
 export async function criarContrato(input: unknown) {
@@ -307,19 +308,55 @@ export async function encerrarContrato(input: unknown) {
   );
 }
 
-export async function excluirContratoRascunho(id: string) {
+/**
+ * Exclui o contrato com tudo que depende dele (cobranças, pagamentos, reajustes, vistorias e arquivos).
+ * Se o contrato estava ativo, o imóvel volta a ficar disponível.
+ */
+export async function excluirContrato(id: string) {
   return runAction(
     async () => {
       const user = await requireAdmin();
       const contratoId = z.string().min(1).parse(id);
-      const contrato = await db.contrato.findUnique({ where: { id: contratoId } });
+      const contrato = await db.contrato.findUnique({
+        where: { id: contratoId },
+        include: { imovel: { select: { status: true } }, cobrancas: { include: { pagamentos: true } } },
+      });
       if (!contrato) throw new AppError("Contrato não encontrado.");
-      if (contrato.status !== "RASCUNHO") throw new AppError("Só é possível excluir contratos em rascunho.");
 
-      await db.contrato.delete({ where: { id: contratoId } });
-      await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Contrato", entidadeId: contratoId });
+      // Arquivos do contrato, dos comprovantes de pagamento e das vistorias (o banco apaga o registro em cascata).
+      const arquivos = await db.arquivo.findMany({
+        where: {
+          OR: [
+            { contratoId },
+            { pagamento: { cobranca: { contratoId } } },
+            { vistoria: { contratoId } },
+          ],
+        },
+        select: { caminho: true, caminhoThumb: true },
+      });
+      const pagamentos = contrato.cobrancas.reduce((n, c) => n + c.pagamentos.length, 0);
+
+      await db.$transaction(async (tx) => {
+        await tx.contrato.delete({ where: { id: contratoId } });
+        if (contrato.status === "ATIVO" && contrato.imovel.status === "ALUGADO") {
+          await tx.imovel.update({ where: { id: contrato.imovelId }, data: { status: "DISPONIVEL" } });
+        }
+      });
+
+      for (const arquivo of arquivos) {
+        await storage.remove(arquivo.caminho).catch(() => undefined);
+        if (arquivo.caminhoThumb) await storage.remove(arquivo.caminhoThumb).catch(() => undefined);
+      }
+
+      await audit({
+        usuarioId: user.id,
+        acao: "DELETE",
+        entidade: "Contrato",
+        entidadeId: contratoId,
+        dados: { numero: contrato.numero, status: contrato.status, imovelId: contrato.imovelId, pagamentos },
+      });
     },
-    { message: "Rascunho excluído." },
+    { message: "Contrato excluído." },
   );
 }
 

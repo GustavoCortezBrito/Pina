@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { DespesasSecao } from "@/features/financeiro/despesas/components/despesas-secao";
 import { ManutencoesSecao } from "@/features/manutencoes/components/manutencoes-secao";
 import { can } from "@/lib/permissions";
-import { requireAccessPage, requireUser } from "@/lib/session";
+import { isAdmin, requireAccessPage, requireUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Despesas e manutenções" };
@@ -64,6 +64,7 @@ export default async function DespesasPage(props: PageProps<"/financeiro/despesa
       ) : (
         <ManutencoesSecao
           verDespesas={verDespesas}
+          podeExcluir={isAdmin(user)}
           destaque={typeof params.destaque === "string" ? params.destaque : undefined}
         />
       )}

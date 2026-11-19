@@ -34,6 +34,7 @@ import { ArquivoAssinadoView } from "@/features/contratos/components/arquivo-ass
 import { PapelContrato } from "@/features/contratos/components/papel-contrato";
 import { montarDocumentoContrato } from "@/features/contratos/documento";
 import { EncerrarDialog } from "@/features/contratos/components/encerrar-dialog";
+import { ExcluirContrato } from "@/features/contratos/components/excluir-contrato";
 import { ReajusteDialog } from "@/features/contratos/components/reajuste-dialog";
 import { obterContrato } from "@/features/contratos/queries";
 import { statusEfetivo } from "@/features/financeiro/services/encargos";
@@ -51,12 +52,12 @@ import {
 import { formatBRL, sum } from "@/lib/money";
 import { today } from "@/lib/dates";
 import { cn } from "@/lib/utils";
-import { requireAccessPage } from "@/lib/session";
+import { isAdmin, requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Contrato" };
 
 export default async function ContratoDetalhePage(props: PageProps<"/contratos/[id]">) {
-  await requireAccessPage("contratos");
+  const user = await requireAccessPage("contratos");
   const { id } = await props.params;
   const contratoBase = await obterContrato(id);
   if (!contratoBase) notFound();
@@ -126,6 +127,14 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
                 </a>
               )}
             </Button>
+            {isAdmin(user) && (
+              <ExcluirContrato
+                contratoId={contrato.id}
+                numero={formatNumeroContrato(contrato.numero)}
+                ativo={contrato.status === "ATIVO"}
+                pagamentos={sum(contrato.cobrancas.map((c) => c.pagamentos.length))}
+              />
+            )}
           </>
         }
       />

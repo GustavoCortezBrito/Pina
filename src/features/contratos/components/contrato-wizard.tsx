@@ -52,6 +52,9 @@ import { contratoSchema, type ContratoInput } from "../schemas";
 
 const ETAPAS = ["Imóvel", "Partes", "Condições", "Revisão"] as const;
 
+// Sugestões de tipo de encargo; o campo continua livre para outros nomes.
+const SUGESTOES_ENCARGO = ["Condomínio", "IPTU", "Água", "Luz", "Gás", "Taxa de lixo", "Seguro incêndio", "Internet"];
+
 const CAMPOS_POR_ETAPA: FieldPath<ContratoInput>[][] = [
   ["origem", "imovelId", "finalidade"],
   ["locatarioId", "fiadorId", "garantia", "caucaoValor", "seguradora", "apolice"],
@@ -460,17 +463,24 @@ export function ContratoWizard({
 
               <div className="space-y-2">
                 <p className="text-sm font-medium">Encargos cobrados junto com o aluguel</p>
+                <datalist id="sugestoes-encargo">
+                  {SUGESTOES_ENCARGO.map((nome) => (
+                    <option key={nome} value={nome} />
+                  ))}
+                </datalist>
                 {fields.map((item, index) => (
-                  <div key={item.id} className="flex items-center gap-2">
+                  <div key={item.id} className="grid grid-cols-[minmax(0,1fr)_9rem_auto] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_11rem_auto]">
                     <Input
-                      placeholder="Condomínio"
+                      list="sugestoes-encargo"
+                      placeholder="Tipo do encargo (ex.: Condomínio)"
+                      aria-label="Tipo do encargo"
+                      autoComplete="off"
                       {...form.register(`encargos.${index}.descricao` as const)}
-                      className="flex-1"
                     />
                     <MoneyInput
                       value={valores.encargos?.[index]?.valor ?? 0}
                       onChange={(v) => form.setValue(`encargos.${index}.valor`, v ?? 0)}
-                      className="w-40"
+                      aria-label="Valor do encargo"
                     />
                     <Button
                       type="button"

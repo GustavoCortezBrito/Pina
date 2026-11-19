@@ -3,11 +3,12 @@
 import { z } from "zod";
 import { StatusManutencao } from "@/generated/prisma/enums";
 import { runAction } from "@/lib/action";
-import { audit } from "@/lib/audit";
+import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
 import { requireAccess, requireAdmin } from "@/lib/session";
+import { storage } from "@/lib/storage";
 import { manutencaoSchema } from "./schemas";
 
 export async function criarManutencao(input: unknown) {
@@ -47,15 +48,50 @@ export async function alterarStatusManutencao(input: unknown) {
   );
 }
 
+/** Edita título, prioridade e detalhes. O imóvel não muda (as despesas da manutenção seguem o imóvel dela). */
+export async function atualizarManutencao(id: string, input: unknown) {
+  return runAction(
+    async () => {
+      const user = await requireAccess("manutencoes");
+      const dados = manutencaoSchema.parse(input);
+      const antes = await db.manutencao.findUnique({ where: { id } });
+      if (!antes) throw new AppError("Manutenção não encontrada.");
+
+      const novos = {
+        titulo: dados.titulo,
+        descricao: nullIfEmpty(dados.descricao),
+        prioridade: dados.prioridade,
+      };
+      await db.manutencao.update({ where: { id }, data: novos });
+      await audit({
+        usuarioId: user.id,
+        acao: "UPDATE",
+        entidade: "Manutencao",
+        entidadeId: id,
+        dados: diffCampos(antes, novos),
+      });
+      return { id };
+    },
+    { message: "Manutenção atualizada." },
+  );
+}
+
+/** As despesas vinculadas continuam registradas, só deixam de apontar para a manutenção. */
 export async function excluirManutencao(id: string) {
   return runAction(
     async () => {
       const user = await requireAdmin();
       const manutencaoId = z.string().min(1).parse(id);
-      const despesas = await db.despesa.count({ where: { manutencaoId } });
-      if (despesas > 0) throw new AppError("Esta manutenção tem despesas vinculadas e não pode ser excluída.");
+      const arquivos = await db.arquivo.findMany({
+        where: { manutencaoId },
+        select: { caminho: true, caminhoThumb: true },
+      });
 
       await db.manutencao.delete({ where: { id: manutencaoId } });
+      for (const arquivo of arquivos) {
+        await storage.remove(arquivo.caminho).catch(() => undefined);
+        if (arquivo.caminhoThumb) await storage.remove(arquivo.caminhoThumb).catch(() => undefined);
+      }
       await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Manutencao", entidadeId: manutencaoId });
     },
     { message: "Manutenção excluída." },

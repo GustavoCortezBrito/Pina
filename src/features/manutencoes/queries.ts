@@ -19,7 +19,21 @@ export async function listarManutencoes(filtros: FiltrosManutencao = {}) {
     orderBy: { abertaEm: "desc" },
     include: {
       imovel: { select: { id: true, codigo: true, titulo: true } },
-      despesas: { select: { valor: true } },
+      despesas: {
+        orderBy: { data: "desc" },
+        select: {
+          id: true,
+          imovelId: true,
+          manutencaoId: true,
+          categoriaId: true,
+          categoria: { select: { nome: true } },
+          data: true,
+          valor: true,
+          fornecedor: true,
+          descricao: true,
+          pago: true,
+        },
+      },
     },
   });
 

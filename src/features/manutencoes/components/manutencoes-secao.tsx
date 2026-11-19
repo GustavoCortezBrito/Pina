@@ -13,7 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { categoriasAtivas } from "@/features/financeiro/despesas/queries";
 import { opcoesImoveis } from "@/features/imoveis/queries";
+import { AcoesManutencao } from "@/features/manutencoes/components/acoes-manutencao";
 import { DespesaDaManutencao } from "@/features/manutencoes/components/despesa-da-manutencao";
+import { DespesasDaManutencaoLista } from "@/features/manutencoes/components/despesas-da-manutencao-lista";
 import { ManutencaoDialog } from "@/features/manutencoes/components/manutencao-dialog";
 import { ManutencaoStatusSelect } from "@/features/manutencoes/components/status-select";
 import { listarManutencoes } from "@/features/manutencoes/queries";
@@ -45,9 +47,11 @@ function estiloDe(status: StatusManutencao) {
 
 export async function ManutencoesSecao({
   verDespesas,
+  podeExcluir,
   destaque,
 }: {
   verDespesas: boolean;
+  podeExcluir: boolean;
   destaque?: string;
 }) {
   const [manutencoes, imoveis, categorias] = await Promise.all([
@@ -122,7 +126,21 @@ export async function ManutencoesSecao({
                     >
                       <Icon className="size-5" />
                     </span>
-                    <StatusBadge label={`Prioridade ${prioridade.label.toLowerCase()}`} tone={prioridade.tone} />
+                    <div className="flex items-center gap-1">
+                      <StatusBadge label={`Prioridade ${prioridade.label.toLowerCase()}`} tone={prioridade.tone} />
+                      <AcoesManutencao
+                        imoveis={imoveis}
+                        manutencao={{
+                          id: item.id,
+                          imovelId: item.imovel.id,
+                          titulo: item.titulo,
+                          descricao: item.descricao ?? "",
+                          prioridade: item.prioridade,
+                        }}
+                        despesas={item.despesas.length}
+                        podeExcluir={podeExcluir}
+                      />
+                    </div>
                   </div>
 
                   <div className="min-w-0 flex-1 space-y-1">
@@ -154,6 +172,35 @@ export async function ManutencoesSecao({
                       </Link>
                       <span className="font-bold tabular-nums">{formatBRL(totalDespesas)}</span>
                     </div>
+                  )}
+
+                  {verDespesas && item.despesas.length > 0 && (
+                    <details className="group">
+                      <summary className="cursor-pointer text-sm font-medium text-primary-ink select-none">
+                        <span className="group-open:hidden">Ver e editar despesas</span>
+                        <span className="hidden group-open:inline">Ocultar despesas</span>
+                      </summary>
+                      <div className="mt-2">
+                        <DespesasDaManutencaoLista
+                          imoveis={imoveis}
+                          categorias={categoriasOptions}
+                          podeExcluir={podeExcluir}
+                          despesas={item.despesas.map((d) => ({
+                            id: d.id,
+                            imovelId: d.imovelId,
+                            manutencaoId: d.manutencaoId,
+                            categoriaId: d.categoriaId,
+                            categoriaNome: d.categoria.nome,
+                            data: formatDate(d.data).split("/").reverse().join("-"),
+                            dataLabel: formatDate(d.data),
+                            valor: d.valor,
+                            fornecedor: d.fornecedor,
+                            descricao: d.descricao,
+                            pago: d.pago,
+                          }))}
+                        />
+                      </div>
+                    </details>
                   )}
 
                   <div className="flex items-center gap-2 border-t pt-3">

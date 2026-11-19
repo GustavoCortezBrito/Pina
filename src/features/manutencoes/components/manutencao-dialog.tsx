@@ -27,23 +27,30 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { criarManutencao } from "../actions";
+import { atualizarManutencao, criarManutencao } from "../actions";
 import { manutencaoSchema, type ManutencaoInput } from "../schemas";
 import { options, PRIORIDADE } from "@/lib/labels";
 
-export function ManutencaoDialog({ imoveis }: { imoveis: ComboboxOption[] }) {
+type Props = {
+  imoveis: ComboboxOption[];
+  /** Se vier, o diálogo edita essa manutenção em vez de criar uma nova. */
+  manutencao?: ManutencaoInput & { id: string };
+  trigger?: React.ReactNode;
+};
+
+export function ManutencaoDialog({ imoveis, manutencao, trigger }: Props) {
   const { pending, run } = useAction();
   const [aberto, setAberto] = React.useState(false);
   const form = useForm<ManutencaoInput>({
     resolver: zodResolver(manutencaoSchema),
-    defaultValues: { imovelId: "", titulo: "", descricao: "", prioridade: "MEDIA" },
+    defaultValues: manutencao ?? { imovelId: "", titulo: "", descricao: "", prioridade: "MEDIA" },
   });
 
   async function onSubmit(dados: ManutencaoInput) {
-    const result = await run(() => criarManutencao(dados));
+    const result = await run(() => (manutencao ? atualizarManutencao(manutencao.id, dados) : criarManutencao(dados)));
     if (result.ok) {
       setAberto(false);
-      form.reset();
+      if (!manutencao) form.reset();
     } else {
       applyServerErrors(form, result);
     }
@@ -52,26 +59,38 @@ export function ManutencaoDialog({ imoveis }: { imoveis: ComboboxOption[] }) {
   return (
     <Dialog open={aberto} onOpenChange={setAberto}>
       <DialogTrigger asChild>
-        <Button size="lg">
-          <PlusIcon /> Nova manutenção
-        </Button>
+        {trigger ?? (
+          <Button size="lg">
+            <PlusIcon /> Nova manutenção
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nova manutenção</DialogTitle>
+          <DialogTitle>{manutencao ? "Editar manutenção" : "Nova manutenção"}</DialogTitle>
+          {manutencao && (
+            <p className="text-sm text-muted-foreground">
+              Imóvel:{" "}
+              <span className="font-semibold text-foreground">
+                {imoveis.find((i) => i.value === manutencao.imovelId)?.label ?? "—"}
+              </span>
+            </p>
+          )}
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" noValidate>
           <FieldGroup>
-            <FormField control={form.control} name="imovelId" label="Imóvel">
-              {(field) => (
-                <Combobox
-                  value={field.value}
-                  onChange={(v) => field.onChange(v ?? "")}
-                  options={imoveis}
-                  placeholder="Selecione o imóvel"
-                />
-              )}
-            </FormField>
+            {!manutencao && (
+              <FormField control={form.control} name="imovelId" label="Imóvel">
+                {(field) => (
+                  <Combobox
+                    value={field.value}
+                    onChange={(v) => field.onChange(v ?? "")}
+                    options={imoveis}
+                    placeholder="Selecione o imóvel"
+                  />
+                )}
+              </FormField>
+            )}
             <FormField control={form.control} name="titulo" label="O que precisa ser feito?">
               {(field) => <Input {...field} placeholder="Vazamento no banheiro social" />}
             </FormField>
@@ -103,7 +122,7 @@ export function ManutencaoDialog({ imoveis }: { imoveis: ComboboxOption[] }) {
             </Button>
             <Button type="submit" disabled={pending}>
               {pending && <Spinner />}
-              Registrar
+              {manutencao ? "Salvar" : "Registrar"}
             </Button>
           </DialogFooter>
         </form>
