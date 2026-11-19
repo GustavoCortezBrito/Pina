@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { detectFileType, processAvatar } from "@/lib/images";
+import { origemInvalida } from "@/lib/origem";
 import { can, ROLES } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
@@ -32,6 +33,7 @@ async function remover(tipo: Tipo, id: string) {
 }
 
 export async function POST(request: Request) {
+  if (origemInvalida(request)) return erro("Origem do pedido não permitida.", 403);
   const session = await getSession();
   if (!session) return erro("Sessão expirada. Entre novamente.", 401);
 
@@ -96,6 +98,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (origemInvalida(request)) return erro("Origem do pedido não permitida.", 403);
   const session = await getSession();
   if (!session) return erro("Sessão expirada. Entre novamente.", 401);
 

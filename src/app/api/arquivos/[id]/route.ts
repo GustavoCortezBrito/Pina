@@ -28,12 +28,15 @@ export async function GET(request: Request, ctx: RouteContext<"/api/arquivos/[id
     return new NextResponse("Arquivo indisponível", { status: 404 });
   }
 
-  const download = url.searchParams.has("download");
+  const mime = usarThumb ? "image/webp" : arquivo.mime;
+  // Só imagem e PDF abrem no navegador; qualquer outro tipo (Word, Excel...) sempre baixa.
+  const abreNoNavegador = mime.startsWith("image/") || mime === "application/pdf";
+  const download = url.searchParams.has("download") || !abreNoNavegador;
   const nome = arquivo.nomeOriginal.replace(/[^\w.\-() ]+/g, "_");
 
   return new NextResponse(new Uint8Array(conteudo), {
     headers: {
-      "Content-Type": usarThumb ? "image/webp" : arquivo.mime,
+      "Content-Type": mime,
       "Content-Length": String(conteudo.byteLength),
       "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${nome}"`,
       "Cache-Control": "private, max-age=3600",

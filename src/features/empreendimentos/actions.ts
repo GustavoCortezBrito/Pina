@@ -6,7 +6,7 @@ import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
-import { requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin } from "@/lib/session";
 import { empreendimentoSchema, type EmpreendimentoInput } from "./schemas";
 
 function paraBanco(dados: EmpreendimentoInput) {
@@ -25,7 +25,7 @@ function paraBanco(dados: EmpreendimentoInput) {
 export async function criarEmpreendimento(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("empreendimentos");
       const dados = empreendimentoSchema.parse(input);
       const empreendimento = await db.empreendimento.create({ data: paraBanco(dados) });
       await audit({
@@ -43,7 +43,7 @@ export async function criarEmpreendimento(input: unknown) {
 export async function atualizarEmpreendimento(id: string, input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("empreendimentos");
       const dados = empreendimentoSchema.parse(input);
       const antes = await db.empreendimento.findUnique({ where: { id } });
       const novos = paraBanco(dados);

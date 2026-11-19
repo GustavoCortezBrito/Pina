@@ -4,6 +4,7 @@ import type { StatusCobranca } from "@/generated/prisma/enums";
 import { statusEfetivo, type StatusCobrancaEfetivo } from "@/features/financeiro/services/encargos";
 import { db } from "@/lib/db";
 import { parseISOMonth, today } from "@/lib/dates";
+import { paginaValida } from "@/lib/paginacao";
 
 export const COBRANCAS_POR_PAGINA = 20;
 
@@ -15,7 +16,7 @@ export type FiltrosCobranca = {
 };
 
 export async function listarCobrancas(filtros: FiltrosCobranca) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const mes = parseISOMonth(filtros.mes);
   const hoje = today();
 

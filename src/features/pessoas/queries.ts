@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import type { PapelPessoa } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { paginaValida } from "@/lib/paginacao";
 
 export const PESSOAS_POR_PAGINA = 15;
 
@@ -17,7 +18,7 @@ export async function opcoesPessoas(papel?: PapelPessoa) {
 export type FiltrosPessoa = { q?: string; papel?: PapelPessoa; page?: number };
 
 export async function listarPessoas(filtros: FiltrosPessoa) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const termo = filtros.q?.trim();
 
   const where: Prisma.PessoaWhereInput = {

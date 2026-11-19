@@ -51,6 +51,10 @@ async function criarUsuario(nome: string, email: string, senha: string, role: "a
 }
 
 async function seedBasico() {
+  // A senha padrão é só para desenvolvimento: em produção ela criaria um administrador com senha pública.
+  if (process.env.NODE_ENV === "production" && !process.env.ADMIN_PASSWORD) {
+    throw new Error("Defina ADMIN_PASSWORD no .env antes de rodar o seed em produção.");
+  }
   const admin = await criarUsuario(
     process.env.ADMIN_NAME || "Administrador",
     process.env.ADMIN_EMAIL || "admin@pinas.com.br",

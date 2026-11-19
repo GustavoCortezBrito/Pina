@@ -4,6 +4,7 @@ import type { CategoriaArquivo } from "@/generated/prisma/enums";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { detectFileType, processImage } from "@/lib/images";
+import { origemInvalida } from "@/lib/origem";
 import { can, type Modulo } from "@/lib/permissions";
 import { getSession } from "@/lib/session";
 import { storage } from "@/lib/storage";
@@ -40,6 +41,7 @@ const CATEGORIAS: CategoriaArquivo[] = [
   "OUTRO",
 ];
 
+const MAX_ARQUIVOS_POR_PEDIDO = 20;
 const MAX_IMAGEM = 15 * 1024 * 1024;
 const MAX_PDF = 25 * 1024 * 1024;
 const MAX_DOCUMENTO = 25 * 1024 * 1024;
@@ -69,6 +71,7 @@ function erro(mensagem: string, status = 400) {
 }
 
 export async function POST(request: Request) {
+  if (origemInvalida(request)) return erro("Origem do pedido não permitida.", 403);
   const session = await getSession();
   if (!session) return erro("Sessão expirada. Entre novamente.", 401);
 
@@ -84,6 +87,7 @@ export async function POST(request: Request) {
   if (categoria !== "FOTO" && !can(session.user.role, "contratos")) return erro("Seu perfil só pode enviar fotos.", 403);
   if (!entidadeId || !(await entidadeExiste(entidade, entidadeId))) return erro("Registro não encontrado.", 404);
   if (arquivos.length === 0) return erro("Nenhum arquivo enviado.");
+  if (arquivos.length > MAX_ARQUIVOS_POR_PEDIDO) return erro(`Envie até ${MAX_ARQUIVOS_POR_PEDIDO} arquivos por vez.`);
 
   const campo = ENTIDADES[entidade];
   const agregado = await db.arquivo.aggregate({
@@ -127,7 +131,12 @@ export async function POST(request: Request) {
     };
 
     if (tipo.kind === "image") {
-      const imagem = await processImage(buffer);
+      let imagem;
+      try {
+        imagem = await processImage(buffer);
+      } catch {
+        return erro(`Não consegui ler "${arquivo.name}". A imagem está corrompida ou é grande demais.`);
+      }
       await storage.save(`${base}.webp`, imagem.data);
       await storage.save(`${base}-thumb.webp`, imagem.thumb);
       dados = {

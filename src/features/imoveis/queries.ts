@@ -4,6 +4,7 @@ import type { StatusImovel, TipoImovel } from "@/generated/prisma/enums";
 import { statusEfetivo } from "@/features/financeiro/services/encargos";
 import { today } from "@/lib/dates";
 import { db } from "@/lib/db";
+import { paginaValida } from "@/lib/paginacao";
 
 export const IMOVEIS_POR_PAGINA = 12;
 
@@ -80,7 +81,7 @@ const RESUMO_SELECT = {
 export type ImovelResumo = Prisma.ImovelGetPayload<{ select: typeof RESUMO_SELECT }>;
 
 export async function listarImoveis(filtros: FiltrosImovel) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const where = montarWhere(filtros);
 
   const [itens, total] = await Promise.all([

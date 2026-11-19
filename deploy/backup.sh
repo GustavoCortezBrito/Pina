@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Backup diário: dump do banco + fotos/documentos. Roda via cron como usuário "deploy".
+# Os backups contêm dados pessoais (CPF, endereços, contratos): ficam legíveis só pelo usuário "deploy".
 set -euo pipefail
+umask 077
 set -a; source /opt/pinasystem/.env; set +a
 
 DESTINO="${BACKUP_DIR:-/var/backups/pinasystem}"
 UPLOADS="${STORAGE_LOCAL_PATH:-/var/lib/pinasystem/uploads}"
 DATA=$(date +%Y-%m-%d_%H%M)
 mkdir -p "$DESTINO"
+chmod 700 "$DESTINO"
 
 pg_dump "$DATABASE_URL" -Fc -f "$DESTINO/db_$DATA.dump"
 tar -czf "$DESTINO/uploads_$DATA.tar.gz" -C "$(dirname "$UPLOADS")" "$(basename "$UPLOADS")"

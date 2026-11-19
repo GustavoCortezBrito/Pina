@@ -15,6 +15,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import { validarSenha } from "@/lib/senha";
 
 const dadosSchema = z.object({
   nome: z.string().trim().min(2, "Informe seu nome."),
@@ -23,12 +24,15 @@ const dadosSchema = z.object({
 const senhaSchema = z
   .object({
     senhaAtual: z.string().min(1, "Informe a senha atual."),
-    novaSenha: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres."),
+    novaSenha: z.string(),
     confirmarSenha: z.string().min(1, "Confirme a nova senha."),
   })
-  .refine((d) => d.novaSenha === d.confirmarSenha, {
-    message: "As senhas não coincidem.",
-    path: ["confirmarSenha"],
+  .superRefine((d, ctx) => {
+    const erro = validarSenha(d.novaSenha);
+    if (erro) ctx.addIssue({ code: "custom", path: ["novaSenha"], message: erro });
+    if (d.novaSenha !== d.confirmarSenha) {
+      ctx.addIssue({ code: "custom", path: ["confirmarSenha"], message: "As senhas não coincidem." });
+    }
   });
 
 type DadosValues = z.infer<typeof dadosSchema>;

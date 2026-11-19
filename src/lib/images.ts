@@ -56,12 +56,16 @@ export function detectFileType(buf: Buffer, nomeOriginal = ""): DetectedFile | n
   return null;
 }
 
+// Limite de pixels de entrada: ~10000×8000 cobre qualquer câmera de celular. Sem ele, uma imagem
+// "bomba" (poucos KB que viram bilhões de pixels) esgotaria a memória do servidor.
+const LIMITE_PIXELS = 80_000_000;
+
 /**
  * Corrige a rotação da foto do celular, limita o tamanho, converte para WebP
  * e gera a miniatura. Os metadados (inclusive GPS) são descartados.
  */
 export async function processImage(input: Buffer) {
-  const base = sharp(input, { failOn: "error" }).rotate();
+  const base = sharp(input, { failOn: "error", limitInputPixels: LIMITE_PIXELS }).rotate();
   const main = await base
     .clone()
     .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
@@ -77,7 +81,7 @@ export async function processImage(input: Buffer) {
 
 /** Foto de perfil: recorte quadrado centrado no rosto/assunto, 512px, WebP, sem metadados. */
 export async function processAvatar(input: Buffer) {
-  const base = sharp(input, { failOn: "error" }).rotate();
+  const base = sharp(input, { failOn: "error", limitInputPixels: LIMITE_PIXELS }).rotate();
   const data = await base
     .clone()
     .resize({ width: 512, height: 512, fit: "cover", position: "attention" })

@@ -106,17 +106,21 @@ sudo cp deploy/Caddyfile /etc/caddy/Caddyfile   # edite o domínio dentro dele
 sudo systemctl reload caddy
 ```
 
+O serviço (`deploy/pinasystem.service`) já vem isolado (sem privilégios, sistema de arquivos somente leitura, só escreve em `/opt/pinasystem` e `/var/lib/pinasystem`) e escuta apenas em `127.0.0.1:3000`; quem atende a internet é o Caddy. Confira a nota de exposição com `systemd-analyze security pinasystem` (esperado: abaixo de 3, "OK").
+
 Acesse `https://sistema.seudominio.com.br` e troque a senha do admin em **Meu perfil**.
 
 > **`npm ci` falhou com "Missing: @emnapi/... from lock file"?** O npm do servidor é mais antigo que o de quem gerou o lockfile. Instale a mesma versão: `npm i -g npm@$(versão local)`.
 
-### Sem domínio ainda (HTTP pelo IP)
+### Sem domínio ainda (HTTPS direto no IP)
 
-Dá para subir só pelo IP, para teste. No `.env` use `BETTER_AUTH_URL="http://IP"` e no `/etc/caddy/Caddyfile` troque o endereço do site por `:80`. O login funciona (o cookie só é marcado como `Secure` quando a URL é `https`), mas a **senha trafega sem criptografia**: não use com dados reais.
+Dá para ter HTTPS sem domínio: a Let's Encrypt emite certificado para o próprio endereço IP (validade curta, 6 dias; o Caddy renova sozinho a cada ~2 dias). Use o bloco "SEM DOMÍNIO" do `deploy/Caddyfile` e, no `.env`, `BETTER_AUTH_URL="https://SEU-IP"`; depois `sudo systemctl reload caddy && sudo systemctl restart pinasystem`. O HTTP (porta 80) passa a só redirecionar para HTTPS. **Nunca deixe o sistema em HTTP**: a senha e o cookie de sessão trafegariam em texto puro.
 
-Quando tiver domínio: crie o registro A para o IP, troque `:80` pelo domínio no Caddyfile, ajuste `BETTER_AUTH_URL` para `https://...` e rode `sudo systemctl reload caddy && sudo systemctl restart pinasystem`. O Caddy emite o certificado sozinho.
+A renovação depende da **porta 80 aberta** e do Caddy rodando. Para conferir: `journalctl -u caddy | grep -i "certificate obtained"`. Se a renovação falhar por mais de ~4 dias, o navegador passa a mostrar erro de certificado; por isso o ideal é registrar um domínio, que usa certificado comum de 90 dias.
 
-O serviço escuta em `*:3000`, então confirme que o firewall bloqueia a 3000 por fora (`curl http://IP:3000` deve falhar).
+Quando tiver domínio: crie o registro A para o IP, troque o endereço do site no Caddyfile pelo domínio e apague o bloco `tls`, ajuste `BETTER_AUTH_URL` para `https://dominio` e rode `sudo systemctl reload caddy && sudo systemctl restart pinasystem`. O Caddy emite o certificado normal sozinho.
+
+Confirme que a porta 3000 não responde por fora (`curl http://IP:3000` deve falhar).
 
 ### Criar os outros usuários
 
@@ -166,11 +170,15 @@ tar -xzf uploads_AAAA-MM-DD_HHMM.tar.gz -C /var/lib/pinasystem
 - [ ] `BETTER_AUTH_URL` com o endereço `https://` real
 - [ ] `EMBEDDED_POSTGRES="false"` e `SEED_DEMO="false"`
 - [ ] Swap criado (servidores de 2 GB de RAM)
-- [ ] Postgres escutando só em localhost; firewall só com SSH, 80 e 443 (a 3000 bloqueada por fora)
-- [ ] Login por senha do root desativado no SSH (só chave)
-- [ ] HTTPS ativo (Caddy)
+- [ ] Postgres escutando só em localhost; firewall só com SSH, 80 e 443 (a 3000 bloqueada por fora e o serviço ouvindo só em 127.0.0.1)
+- [ ] Login por senha do root desativado no SSH (só chave), sem X11
+- [ ] HTTPS ativo (Caddy) e o HTTP só redirecionando; `BETTER_AUTH_URL` em `https://`
+- [ ] `systemd-analyze security pinasystem` abaixo de 3
+- [ ] Backups legíveis só pelo usuário `deploy` (`/var/backups/pinasystem` em 700, arquivos em 600)
 - [ ] Backup diário rodando **e restauração testada**
 - [ ] Cópia externa dos backups configurada
 - [ ] Monitoramento de disponibilidade (UptimeRobot ou Uptime Kuma)
 - [ ] Senhas temporárias dos usuários trocadas no primeiro acesso
 - [ ] `unattended-upgrades` e `fail2ban` ativos
+
+Mais sobre proteções, riscos aceitos e a rotina de segurança: [Segurança](08-seguranca.md).

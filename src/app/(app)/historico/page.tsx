@@ -118,7 +118,7 @@ export default async function HistoricoPage(props: PageProps<"/historico">) {
               const lugar = ENTIDADE_LABEL[item.entidade] ?? item.entidade.toLowerCase();
               const alteracoes = extrairAlteracoes(item.dados);
               const nomeUsuario = item.usuario?.name ?? "Sistema";
-              const ehLogin = item.acao === "LOGIN";
+              const ehLogin = item.acao === "LOGIN" || item.acao === "LOGIN_FALHA" || item.acao === "LOGIN_BLOQUEADO";
 
               return (
                 <Card

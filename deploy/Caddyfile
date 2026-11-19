@@ -1,8 +1,39 @@
-# Troque pelo seu domínio. O Caddy emite e renova o HTTPS (Let's Encrypt) sozinho.
+# MODELO COM DOMÍNIO. Troque pelo seu domínio: o Caddy emite e renova o HTTPS (Let's Encrypt) sozinho
+# e redireciona o HTTP (porta 80) para HTTPS. Crie antes o registro DNS do tipo A apontando para o IP da VPS.
 sistema.seudominio.com.br {
 	encode gzip zstd
 	request_body {
 		max_size 30MB
 	}
+	header {
+		# Obriga o navegador a usar sempre HTTPS neste endereço (1 ano).
+		Strict-Transport-Security "max-age=31536000"
+		# Não anuncia o servidor nem o proxy.
+		-Server
+		-Via
+	}
 	reverse_proxy 127.0.0.1:3000
 }
+
+# ---------------------------------------------------------------------------------------------
+# SEM DOMÍNIO (provisório): HTTPS direto no endereço IP. A Let's Encrypt emite certificado para IP
+# com validade curta (6 dias) e o Caddy renova sozinho. Use este bloco no lugar do de cima e
+# ajuste BETTER_AUTH_URL no .env para https://SEU-IP.
+#
+# https://143.95.190.143 {
+# 	tls {
+# 		issuer acme {
+# 			profile shortlived
+# 		}
+# 	}
+# 	encode gzip zstd
+# 	request_body {
+# 		max_size 30MB
+# 	}
+# 	header {
+# 		Strict-Transport-Security "max-age=31536000"
+# 		-Server
+# 		-Via
+# 	}
+# 	reverse_proxy 127.0.0.1:3000
+# }

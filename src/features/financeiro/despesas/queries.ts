@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { parseISOMonth } from "@/lib/dates";
+import { paginaValida } from "@/lib/paginacao";
 
 export const DESPESAS_POR_PAGINA = 20;
 
@@ -13,7 +14,7 @@ export type FiltrosDespesa = {
 };
 
 export async function listarDespesas(filtros: FiltrosDespesa) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const mes = parseISOMonth(filtros.mes);
 
   const where: Prisma.DespesaWhereInput = {

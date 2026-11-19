@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import type { TipoImovel } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { paginaValida } from "@/lib/paginacao";
 
 export const VITRINE_POR_PAGINA = 12;
 
@@ -56,7 +57,7 @@ export type FiltrosVitrine = {
 };
 
 export async function listarVitrine(filtros: FiltrosVitrine) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const where: Prisma.ImovelWhereInput = {
     ...VISIVEL,
     tipo: filtros.tipo,

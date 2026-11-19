@@ -6,7 +6,7 @@ import { audit, diffCampos } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
 import { nullIfEmpty } from "@/lib/form";
-import { requireAccess, requireAdmin, requireUser } from "@/lib/session";
+import { requireAccess, requireAdmin } from "@/lib/session";
 import { today } from "@/lib/dates";
 import { imovelSchema, statusImovelSchema, type ImovelInput } from "./schemas";
 
@@ -55,7 +55,7 @@ async function garantirCodigoLivre(codigo: string, ignorarId?: string) {
 export async function criarImovel(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const dados = imovelSchema.parse(input);
       await garantirCodigoLivre(dados.codigo);
 
@@ -75,7 +75,7 @@ export async function criarImovel(input: unknown) {
 export async function atualizarImovel(id: string, input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const dados = imovelSchema.parse(input);
       await garantirCodigoLivre(dados.codigo, id);
 
@@ -106,7 +106,7 @@ export async function atualizarImovel(id: string, input: unknown) {
 export async function alterarStatusImovel(input: unknown) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const { id, status } = statusImovelSchema.parse(input);
 
       const contratoAtivo = await db.contrato.findFirst({

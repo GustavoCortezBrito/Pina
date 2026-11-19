@@ -19,6 +19,8 @@ export const ACAO_LABEL: Record<string, { verbo: string; filtro: string; tom: "c
   PHOTO_REMOVE: { verbo: "removeu a foto de", filtro: "Fotos de perfil", tom: "excluiu" },
   IMPORT: { verbo: "importou planilha de", filtro: "Importações", tom: "criou" },
   LOGIN: { verbo: "entrou no sistema", filtro: "Acessos (login)", tom: "outro" },
+  LOGIN_FALHA: { verbo: "teve tentativas de login com a senha errada", filtro: "Falhas de login", tom: "outro" },
+  LOGIN_BLOQUEADO: { verbo: "teve a conta bloqueada por alguns minutos após muitas senhas erradas", filtro: "Falhas de login", tom: "excluiu" },
 };
 
 export const FILTRO_ACAO = [
@@ -32,6 +34,8 @@ export const FILTRO_ACAO = [
   ["PHOTO", "Fotos de perfil"],
   ["PUBLISH", "Publicações no site"],
   ["LOGIN", "Acessos (login)"],
+  ["LOGIN_FALHA", "Falhas de login"],
+  ["LOGIN_BLOQUEADO", "Contas bloqueadas"],
 ].map(([value, label]) => ({ value, label }));
 
 export const ENTIDADE_LABEL: Record<string, string> = {

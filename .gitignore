@@ -49,3 +49,11 @@ next-env.d.ts
 # Documentos com dados pessoais reais (nao versionar)
 Modelo_Contrato*.docx
 *.docx
+
+# Material do cliente (audios e prints do WhatsApp) e dados de prospeccao: contem dados pessoais
+/Corrections/
+/scripts/prospeccao/**/*.csv
+/scripts/prospeccao/**/*.xlsx
+/scripts/prospeccao/**/*.json
+__pycache__/
+*.pyc

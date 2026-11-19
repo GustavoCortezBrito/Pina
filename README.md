@@ -15,6 +15,7 @@ Controla imóveis e suas fotos, inquilinos e fiadores, contratos, cobranças men
 | 5 | [Telas e fluxos](docs/05-telas-e-fluxos.md) | Mapa de telas e fluxos principais |
 | 6 | [Roadmap](docs/06-roadmap.md) | Fases de entrega e checklist |
 | 7 | [Deploy na VPS](docs/07-deploy-vps.md) | Node + PostgreSQL + Caddy + systemd (sem Docker), HTTPS e backups |
+| 8 | [Segurança](docs/08-seguranca.md) | Proteções, riscos aceitos e rotina de segurança |
 
 ## Stack em uma linha
 
@@ -36,6 +37,8 @@ npm run db:migrate            # cria as tabelas
 npm run db:seed               # administrador, modelos de contrato e dados de exemplo (usa ImovelExemplo/)
 npm run dev                   # http://localhost:3000
 ```
+
+A página inicial (`/`) é o **site público** de imóveis; a equipe entra pelo ícone de cadeado no cabeçalho (ou direto em `/login`) e cai no painel, em `/painel`.
 
 Comandos úteis: `npm run db:start | db:stop | db:status`, `npm run usuario:criar -- "Nome" email@x.com admin`, `npm test`, `npm run typecheck`.
 

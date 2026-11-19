@@ -2,13 +2,14 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import type { StatusContrato } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
+import { paginaValida } from "@/lib/paginacao";
 
 export const CONTRATOS_POR_PAGINA = 15;
 
 export type FiltrosContrato = { q?: string; status?: StatusContrato; page?: number };
 
 export async function listarContratos(filtros: FiltrosContrato) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const termo = filtros.q?.trim();
 
   const where: Prisma.ContratoWhereInput = {

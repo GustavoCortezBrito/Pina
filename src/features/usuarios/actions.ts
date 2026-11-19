@@ -7,16 +7,22 @@ import { audit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { AppError } from "@/lib/errors";
 import { ROLES } from "@/lib/permissions";
+import { SENHA_MAX, validarSenha } from "@/lib/senha";
 import { requireAdmin } from "@/lib/session";
 
 const papelSchema = z.enum([ROLES.ADMIN, ROLES.GERENTE, ROLES.OPERADOR, ROLES.SITE]);
 
-const novoUsuarioSchema = z.object({
-  name: z.string().trim().min(2, "Informe o nome").max(120),
-  email: z.string().trim().toLowerCase().email("E-mail inválido"),
-  password: z.string().min(8, "A senha precisa de ao menos 8 caracteres").max(128),
-  role: papelSchema,
-});
+const novoUsuarioSchema = z
+  .object({
+    name: z.string().trim().min(2, "Informe o nome").max(120),
+    email: z.string().trim().toLowerCase().email("E-mail inválido"),
+    password: z.string().max(SENHA_MAX, `A senha pode ter no máximo ${SENHA_MAX} caracteres`),
+    role: papelSchema,
+  })
+  .superRefine((d, ctx) => {
+    const erro = validarSenha(d.password, { email: d.email, nome: d.name });
+    if (erro) ctx.addIssue({ code: "custom", path: ["password"], message: erro });
+  });
 
 // O plugin admin tipa só "admin" | "user"; ele aceita qualquer papel textual, e a hierarquia real vive em lib/permissions.
 export async function criarUsuario(input: unknown) {
@@ -85,12 +91,13 @@ export async function redefinirSenhaUsuario(userId: string, novaSenha: string) {
   return runAction(
     async () => {
       const admin = await requireAdmin();
-      const newPassword = z
-        .string()
-        .min(8, "A senha precisa de ao menos 8 caracteres")
-        .max(128)
-        .parse(novaSenha);
-      await auth.api.setUserPassword({ body: { userId, newPassword }, headers: await headers() });
+      const newPassword = z.string().max(SENHA_MAX).parse(novaSenha);
+      const erroSenha = validarSenha(newPassword);
+      if (erroSenha) throw new AppError(erroSenha);
+      const h = await headers();
+      await auth.api.setUserPassword({ body: { userId, newPassword }, headers: h });
+      // Quem estava logado com a senha antiga (inclusive um invasor) é desconectado.
+      await auth.api.revokeUserSessions({ body: { userId }, headers: h });
       await audit({ usuarioId: admin.id, acao: "RESET_PASSWORD", entidade: "User", entidadeId: userId });
     },
     { message: "Senha redefinida." },

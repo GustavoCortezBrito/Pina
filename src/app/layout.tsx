@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -23,11 +24,13 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Código de uso único da política de segurança (CSP), gerado pelo proxy a cada pedido.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="pt-BR" suppressHydrationWarning className={cn("h-full", inter.variable, geistMono.variable)}>
       <body className="flex min-h-full flex-col font-sans antialiased">
-        <ThemeProvider>
+        <ThemeProvider nonce={nonce}>
           <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>

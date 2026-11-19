@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { formatNumeroContrato } from "@/lib/format";
+import { paginaValida } from "@/lib/paginacao";
 
 export const TAMANHOS_PAGINA = [10, 25, 50, 100] as const;
 export const HISTORICO_POR_PAGINA = 25;
@@ -32,7 +33,7 @@ function intervalo(de?: string, ate?: string) {
 }
 
 export async function listarHistorico(filtros: FiltrosHistorico) {
-  const page = Math.max(1, filtros.page ?? 1);
+  const page = paginaValida(filtros.page);
   const criadoEm = intervalo(filtros.de, filtros.ate);
   const porPagina = (TAMANHOS_PAGINA as readonly number[]).includes(filtros.porPagina ?? 0)
     ? (filtros.porPagina as number)

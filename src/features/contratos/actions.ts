@@ -12,7 +12,6 @@ import { nullIfEmpty } from "@/lib/form";
 import { prorate, sum } from "@/lib/money";
 import { requireAccess, requireAdmin } from "@/lib/session";
 import { AppError } from "@/lib/errors";
-import { getSettings } from "@/lib/settings";
 import { storage } from "@/lib/storage";
 import { contratoSchema } from "./schemas";
 
@@ -358,26 +357,4 @@ export async function excluirContrato(id: string) {
     },
     { message: "Contrato excluído." },
   );
-}
-
-/** Usado pela tela de reajuste para sugerir a data e mostrar se já está em atraso. */
-export async function obterSugestaoReajuste(contratoId: string) {
-  const contrato = await db.contrato.findUnique({
-    where: { id: contratoId },
-    include: { reajustes: true },
-  });
-  if (!contrato) return null;
-  const settings = await getSettings();
-  const sugestao = proximoReajuste({
-    dataInicio: contrato.dataInicio,
-    dataFim: contrato.dataFim,
-    indice: contrato.indiceReajuste,
-    reajustesAplicados: contrato.reajustes.length + contrato.reajustesAnteriores,
-  });
-  return {
-    dataSugerida: sugestao ?? today(),
-    indice: contrato.indiceReajuste,
-    percentualPadrao: contrato.indiceReajuste === "FIXO" ? 0 : null,
-    indiceLabelPadrao: settings.financeiro.indiceReajuste,
-  };
 }

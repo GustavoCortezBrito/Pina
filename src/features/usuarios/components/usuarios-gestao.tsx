@@ -171,7 +171,7 @@ export function UsuariosGestao({ usuarios, meuId }: { usuarios: UsuarioItem[]; m
             />
             <Input
               type="password"
-              placeholder="Senha (mín. 8 caracteres)"
+              placeholder="Senha (mín. 10 caracteres, misture letras e números)"
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
             />
@@ -206,7 +206,7 @@ export function UsuariosGestao({ usuarios, meuId }: { usuarios: UsuarioItem[]; m
           </DialogHeader>
           <Input
             type="password"
-            placeholder="Nova senha (mín. 8 caracteres)"
+            placeholder="Nova senha (mín. 10 caracteres, misture letras e números)"
             value={novaSenha}
             onChange={(e) => setNovaSenha(e.target.value)}
           />
