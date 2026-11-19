@@ -52,7 +52,7 @@ export function SiteForm({ valores }: { valores: Site }) {
           Salvar
         </Button>
         <Button type="button" variant="outline" asChild>
-          <a href="/vitrine" target="_blank" rel="noreferrer">
+          <a href="/" target="_blank" rel="noreferrer">
             <ExternalLinkIcon /> Ver a vitrine
           </a>
         </Button>

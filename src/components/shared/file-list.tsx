@@ -18,9 +18,12 @@ export type ArquivoItem = {
 export function FileList({
   arquivos,
   vazio = "Nenhum arquivo enviado.",
+  podeExcluir = false,
 }: {
   arquivos: ArquivoItem[];
   vazio?: string;
+  /** Excluir é só do administrador. */
+  podeExcluir?: boolean;
 }) {
   if (arquivos.length === 0) {
     return <p className="py-6 text-center text-sm text-muted-foreground">{vazio}</p>;
@@ -51,17 +54,19 @@ export function FileList({
                 <DownloadIcon />
               </a>
             </Button>
-            <ConfirmAction
-              trigger={
-                <Button variant="ghost" size="icon-sm" aria-label="Excluir arquivo">
-                  <Trash2Icon />
-                </Button>
-              }
-              titulo="Excluir arquivo?"
-              descricao={`"${arquivo.nomeOriginal}" será apagado definitivamente.`}
-              confirmLabel="Excluir"
-              action={() => excluirArquivo(arquivo.id)}
-            />
+            {podeExcluir && (
+              <ConfirmAction
+                trigger={
+                  <Button variant="ghost" size="icon-sm" aria-label="Excluir arquivo">
+                    <Trash2Icon />
+                  </Button>
+                }
+                titulo="Excluir arquivo?"
+                descricao={`"${arquivo.nomeOriginal}" será apagado definitivamente.`}
+                confirmLabel="Excluir"
+                action={() => excluirArquivo(arquivo.id)}
+              />
+            )}
           </li>
         );
       })}

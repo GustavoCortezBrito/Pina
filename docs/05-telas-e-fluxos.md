@@ -10,8 +10,10 @@
 ## 5.2 Mapa de telas
 
 ```
-/login
-/                               Dashboard
+/                               Site público: vitrine de imóveis disponíveis (sem login)
+/imovel/[id]                    Página pública de um imóvel (fotos, valor, contato por WhatsApp)
+/login                          Acesso da equipe (ícone de cadeado no cabeçalho do site)
+/painel                         Dashboard (início do sistema, depois do login)
 /imoveis                        Lista (cards com foto de capa | tabela)
 /imoveis/novo                   Formulário em etapas
 /imoveis/[id]                   Detalhe com abas

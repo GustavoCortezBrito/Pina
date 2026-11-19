@@ -336,6 +336,7 @@ export default async function ContratoDetalhePage(props: PageProps<"/contratos/[
           <FileList
             arquivos={contrato.arquivos}
             vazio="Nenhum arquivo anexado (contrato assinado, etc.)."
+            podeExcluir={isAdmin(user)}
           />
         </TabsContent>
       </Tabs>

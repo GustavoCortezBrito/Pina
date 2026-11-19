@@ -17,8 +17,11 @@ const config = {
 
 export function RevenueChart({
   dados,
+  mostrarDespesa = true,
 }: {
   dados: Array<{ mes: string; receita: number; despesa: number }>;
+  /** Perfis sem acesso a despesas veem só a receita. */
+  mostrarDespesa?: boolean;
 }) {
   return (
     <ChartContainer config={config} className="h-72 w-full">
@@ -34,7 +37,7 @@ export function RevenueChart({
         />
         <ChartLegend content={<ChartLegendContent />} />
         <Bar dataKey="receita" fill="var(--color-receita)" radius={4} />
-        <Bar dataKey="despesa" fill="var(--color-despesa)" radius={4} />
+        {mostrarDespesa && <Bar dataKey="despesa" fill="var(--color-despesa)" radius={4} />}
       </BarChart>
     </ChartContainer>
   );

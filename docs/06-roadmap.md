@@ -68,7 +68,7 @@ As estimativas consideram **um desenvolvedor em meio período**. Cada fase termi
 - [ ] Busca automática de IGP-M/IPCA (API SGS do Banco Central)
 - [ ] Portal do inquilino (2ª via e recibos)
 - [ ] Assinatura digital (ZapSign, Clicksign, D4Sign)
-- [ ] Vitrine pública de imóveis disponíveis
+- [x] Vitrine pública de imóveis disponíveis (é a página inicial do site; o painel fica em `/painel`)
 - [ ] Informe de rendimentos anual
 
 ## Definição de pronto

@@ -68,7 +68,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 <PublicarSiteButton id={imovel.id} publicado={imovel.publicadoNoSite} />
                 {imovel.publicadoNoSite && imovel.status === "DISPONIVEL" && (
                   <Button variant="outline" asChild>
-                    <a href={`/vitrine/${imovel.id}`} target="_blank" rel="noreferrer">
+                    <a href={`/imovel/${imovel.id}`} target="_blank" rel="noreferrer">
                       <ExternalLinkIcon /> Ver no site
                     </a>
                   </Button>
@@ -211,7 +211,7 @@ export default async function ImovelDetalhePage(props: PageProps<"/imoveis/[id]"
                 categoria="DOCUMENTO"
                 titulo="Matrícula, IPTU, contas..."
               />
-              <FileList arquivos={documentos} />
+              <FileList arquivos={documentos} podeExcluir={admin} />
             </TabsContent>
 
             <TabsContent value="contratos">

@@ -5,7 +5,8 @@ import { runAction } from "@/lib/action";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { AppError } from "@/lib/errors";
-import { requireUser } from "@/lib/session";
+import { podeExcluirArquivo } from "@/lib/permissions";
+import { requireAccess, requireUser } from "@/lib/session";
 import { storage } from "@/lib/storage";
 
 const idSchema = z.string().min(1);
@@ -13,7 +14,7 @@ const idSchema = z.string().min(1);
 export async function definirCapa(arquivoId: string) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const id = idSchema.parse(arquivoId);
       const arquivo = await db.arquivo.findUnique({ where: { id } });
       if (!arquivo?.imovelId) throw new AppError("Só é possível definir capa em fotos de imóveis.");
@@ -34,10 +35,10 @@ export async function definirCapa(arquivoId: string) {
 export async function moverArquivo(arquivoId: string, direcao: "anterior" | "proximo") {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const id = idSchema.parse(arquivoId);
       const arquivo = await db.arquivo.findUnique({ where: { id } });
-      if (!arquivo) throw new AppError("Arquivo não encontrado.");
+      if (!arquivo?.imovelId) throw new AppError("Só é possível reordenar fotos de imóveis.");
 
       const vizinho = await db.arquivo.findFirst({
         where: {
@@ -64,9 +65,11 @@ export async function moverArquivo(arquivoId: string, direcao: "anterior" | "pro
 export async function atualizarLegenda(arquivoId: string, legenda: string) {
   return runAction(
     async () => {
-      const user = await requireUser();
+      const user = await requireAccess("imoveis");
       const id = idSchema.parse(arquivoId);
       const texto = z.string().max(200).parse(legenda).trim();
+      const arquivo = await db.arquivo.findUnique({ where: { id }, select: { imovelId: true } });
+      if (!arquivo?.imovelId) throw new AppError("Só é possível legendar fotos de imóveis.");
       await db.arquivo.update({ where: { id }, data: { legenda: texto || null } });
       await audit({ usuarioId: user.id, acao: "UPDATE", entidade: "Arquivo", entidadeId: id, dados: { legenda: texto || null } });
     },
@@ -74,6 +77,7 @@ export async function atualizarLegenda(arquivoId: string, legenda: string) {
   );
 }
 
+/** Só o administrador exclui; exceção para fotos de imóveis (ver `podeExcluirArquivo`). */
 export async function excluirArquivo(arquivoId: string) {
   return runAction(
     async () => {
@@ -81,6 +85,10 @@ export async function excluirArquivo(arquivoId: string) {
       const id = idSchema.parse(arquivoId);
       const arquivo = await db.arquivo.findUnique({ where: { id } });
       if (!arquivo) throw new AppError("Arquivo não encontrado.");
+
+      if (!podeExcluirArquivo(user.role, arquivo)) {
+        throw new AppError("Apenas administradores podem excluir arquivos.");
+      }
 
       await db.arquivo.delete({ where: { id } });
       await audit({ usuarioId: user.id, acao: "DELETE", entidade: "Arquivo", entidadeId: id, dados: { nome: arquivo.nomeOriginal } });

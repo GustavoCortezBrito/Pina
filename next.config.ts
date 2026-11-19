@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
   experimental: {
     agentUpgrade: "security",
   },
+  // Endereços antigos da vitrine (agora o site é a página inicial).
+  async redirects() {
+    return [
+      { source: "/vitrine", destination: "/", permanent: true },
+      { source: "/vitrine/:id", destination: "/imovel/:id", permanent: true },
+    ];
+  },
   async headers() {
     return [
       // Nenhuma página pode ser embutida em outro site; só os arquivos do sistema (PDF do contrato) podem

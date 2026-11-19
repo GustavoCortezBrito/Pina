@@ -9,7 +9,10 @@ export type { ParamsPeriodo, PeriodoResolvido } from "./periodos";
 export type PontoReceitaDespesa = { mes: string; mesLabel: string; receita: number; despesa: number };
 
 /** Receita (pagamentos) x despesa por mês no período escolhido. */
-export async function receitaDespesaPeriodo(periodo: PeriodoResolvido): Promise<PontoReceitaDespesa[]> {
+export async function receitaDespesaPeriodo(
+  periodo: PeriodoResolvido,
+  { despesas: comDespesas = true }: { despesas?: boolean } = {},
+): Promise<PontoReceitaDespesa[]> {
   const { inicio, meses } = periodo;
   const limite = addMonths(inicio, meses);
 
@@ -18,10 +21,12 @@ export async function receitaDespesaPeriodo(periodo: PeriodoResolvido): Promise<
       where: { dataPagamento: { gte: inicio, lt: limite } },
       select: { dataPagamento: true, valorPago: true },
     }),
-    db.despesa.findMany({
-      where: { data: { gte: inicio, lt: limite } },
-      select: { data: true, valor: true },
-    }),
+    comDespesas
+      ? db.despesa.findMany({
+          where: { data: { gte: inicio, lt: limite } },
+          select: { data: true, valor: true },
+        })
+      : Promise.resolve([]),
   ]);
 
   const porMes = new Map<string, { receita: number; despesa: number }>();

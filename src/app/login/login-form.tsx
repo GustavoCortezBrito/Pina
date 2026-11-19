@@ -14,6 +14,7 @@ import { FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import { destinoSeguro } from "@/lib/destino";
 
 const schema = z.object({
   email: z.email("Informe um e-mail válido."),
@@ -42,7 +43,7 @@ export function LoginForm({ next }: { next?: string }) {
       );
       return;
     }
-    router.push(next?.startsWith("/") ? next : "/");
+    router.push(destinoSeguro(next));
     router.refresh();
   }
 

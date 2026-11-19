@@ -17,7 +17,7 @@ export default function NotFound() {
         Ele pode ter sido alugado. Veja os outros imóveis da vitrine.
       </p>
       <Link
-        href="/vitrine#imoveis"
+        href="/#imoveis"
         className="mt-10 inline-flex h-14 items-center gap-2 rounded-full bg-primary px-7 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5"
       >
         <ArrowLeftIcon className="size-5" /> Ver imóveis disponíveis

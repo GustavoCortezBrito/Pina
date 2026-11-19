@@ -20,12 +20,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur-md md:px-4">
           <SidebarTrigger className="size-10" />
-          <Link href="/" className="md:hidden" aria-label="Início">
+          <Link href="/painel" className="md:hidden" aria-label="Início">
             <Logo showText className="[&>span:last-child]:hidden min-[380px]:[&>span:last-child]:grid" />
           </Link>
           <div className="ml-auto flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild className="text-primary-ink">
-              <a href="/vitrine" target="_blank" rel="noreferrer" title="Abrir a vitrine pública de imóveis">
+              <a href="/" target="_blank" rel="noreferrer" title="Abrir o site público de imóveis">
                 <GlobeIcon /> <span className="hidden sm:inline">Ver site</span>
               </a>
             </Button>

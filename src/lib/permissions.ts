@@ -15,10 +15,12 @@ export const ROLE_LABEL: Record<Role, string> = {
 };
 
 export const ROLE_DESCRIPTION: Record<Role, string> = {
-  admin: "Acesso total: usuários, configurações, exclusões e tudo abaixo.",
-  gerente: "Toda a operação (contratos, financeiro, relatórios, site). Sem usuários nem configurações.",
-  operador: "Dia a dia: cadastros, contratos, cobranças e manutenções. Sem despesas nem relatórios.",
-  site: "Só imóveis, fotos e publicação no site. Não vê contratos nem financeiro.",
+  admin: "Acesso total: usuários, configurações e tudo abaixo. É o único perfil que pode excluir.",
+  gerente:
+    "Toda a operação: contratos, cobranças, despesas, relatórios, histórico e publicação no site. Não exclui e não acessa usuários nem configurações.",
+  operador:
+    "Dia a dia: imóveis, pessoas, contratos, cobranças (recebimentos e recibos) e manutenções. Não vê despesas, relatórios nem histórico, não publica no site e não exclui.",
+  site: "Só imóveis, fotos e publicação no site. Não vê contratos, pessoas nem financeiro e não exclui.",
 };
 
 /** Módulos do sistema e quem pode acessá-los (hierarquia: admin > gerente > operador > site). */
@@ -47,7 +49,19 @@ export function can(role: string | null | undefined, modulo: Modulo) {
   return (ACESSO[modulo] as readonly Role[]).includes(normalizeRole(role));
 }
 
+/**
+ * Excluir é só do administrador. A única exceção são as fotos dos imóveis: quem cuida dos imóveis
+ * (inclusive o editor do site) precisa poder trocar uma foto errada.
+ */
+export function podeExcluirArquivo(
+  role: string | null | undefined,
+  arquivo: { categoria: string; imovelId: string | null },
+) {
+  if (role === ROLES.ADMIN) return true;
+  return arquivo.categoria === "FOTO" && arquivo.imovelId != null && can(role, "imoveis");
+}
+
 /** Primeira página que o papel pode abrir (para onde redirecionar quem não tem acesso). */
 export function homeFor(role: string | null | undefined) {
-  return can(role, "contratos") ? "/" : "/imoveis";
+  return can(role, "contratos") ? "/painel" : "/imoveis";
 }

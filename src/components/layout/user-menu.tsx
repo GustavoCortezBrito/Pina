@@ -40,7 +40,7 @@ export function UserMenu({
 
   async function sair() {
     await authClient.signOut();
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 

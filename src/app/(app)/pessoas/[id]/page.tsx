@@ -173,7 +173,7 @@ export default async function PessoaDetalhePage(props: PageProps<"/pessoas/[id]"
             categoria="DOCUMENTO"
             titulo="RG, CPF, comprovantes..."
           />
-          <FileList arquivos={pessoa.arquivos} />
+          <FileList arquivos={pessoa.arquivos} podeExcluir={isAdmin(user)} />
         </TabsContent>
 
         <TabsContent value="contratos" className="space-y-3">

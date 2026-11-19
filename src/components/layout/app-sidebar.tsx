@@ -42,7 +42,7 @@ const GRUPOS: Array<{ label: string; items: Item[] }> = [
   {
     label: "Visão geral",
     items: [
-      { href: "/", label: "Painel", icon: LayoutDashboardIcon, modulo: "contratos" },
+      { href: "/painel", label: "Painel", icon: LayoutDashboardIcon, modulo: "contratos" },
     ],
   },
   {
@@ -121,7 +121,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
 
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const isActive = (href: string) => pathname.startsWith(href);
 
   const renderItem = (item: Item) => (
     <SidebarMenuItem key={item.href}>
@@ -142,7 +142,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-1.5">
-        <Link href="/" className="flex items-center" onClick={() => setOpenMobile(false)}>
+        <Link href="/painel" className="flex items-center" onClick={() => setOpenMobile(false)}>
           <Logo
             showText
             className="text-sidebar-foreground [&_.text-muted-foreground]:text-sidebar-foreground/60 group-data-[collapsible=icon]:[&>span:last-child]:hidden"

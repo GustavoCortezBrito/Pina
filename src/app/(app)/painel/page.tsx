@@ -33,7 +33,7 @@ import { receitaDespesaPeriodo, resolverPeriodo } from "@/features/relatorios/qu
 import { formatDate, formatDateLong } from "@/lib/dates";
 import { INDICE_REAJUSTE } from "@/lib/labels";
 import { formatBRL } from "@/lib/money";
-import { ROLE_LABEL, normalizeRole } from "@/lib/permissions";
+import { can, ROLE_LABEL, normalizeRole } from "@/lib/permissions";
 import { requireAccessPage } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Painel" };
@@ -91,21 +91,22 @@ function SecaoCard({
 const LINHA =
   "group flex items-center justify-between gap-3 border-t px-6 py-3 text-sm transition-colors first:border-t-0 hover:bg-muted/60";
 
-export default async function DashboardPage(props: PageProps<"/">) {
+export default async function DashboardPage(props: PageProps<"/painel">) {
   const params = await props.searchParams;
   const lerParam = (nome: string) => (typeof params[nome] === "string" ? params[nome] : undefined);
   const periodo = resolverPeriodo({ periodo: lerParam("periodo"), de: lerParam("de"), ate: lerParam("ate") });
   const hoje = formatDateLong(new Date()).replace(/^\w/, (c) => c.toUpperCase());
-  const [user, resumo, atrasadas, vencendoSemana, contratosVencendo, reajustes, serieMensal] =
-    await Promise.all([
-      requireAccessPage("contratos"),
-      resumoDashboard(),
-      cobrancasAtrasadas(),
-      cobrancasVencendoEmBreve(),
-      contratosVencendoEmBreve(),
-      reajustesProximos(),
-      receitaDespesaPeriodo(periodo),
-    ]);
+  const user = await requireAccessPage("contratos");
+  // Quem não acessa despesas (operador) vê só a receita no gráfico.
+  const verDespesas = can(user.role, "despesas");
+  const [resumo, atrasadas, vencendoSemana, contratosVencendo, reajustes, serieMensal] = await Promise.all([
+    resumoDashboard(),
+    cobrancasAtrasadas(),
+    cobrancasVencendoEmBreve(),
+    contratosVencendoEmBreve(),
+    reajustesProximos(),
+    receitaDespesaPeriodo(periodo, { despesas: verDespesas }),
+  ]);
 
   const ocupacao = resumo.totalUnidades ? Math.round((resumo.ocupadas / resumo.totalUnidades) * 100) : 0;
   const totalMes = resumo.recebidoMes + resumo.aReceberMes;
@@ -217,7 +218,7 @@ export default async function DashboardPage(props: PageProps<"/">) {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <SecaoCard
-          titulo={`Receita × despesa — ${periodo.rotulo}`}
+          titulo={`${verDespesas ? "Receita × despesa" : "Receita"} — ${periodo.rotulo}`}
           icon={TrendingUpIcon}
           cor="bg-primary/15 text-primary-ink"
           delay={160}
@@ -225,7 +226,7 @@ export default async function DashboardPage(props: PageProps<"/">) {
         >
           <div className="space-y-4 p-4 sm:p-6">
             <PeriodoFilter />
-            <RevenueChart dados={dadosGrafico} />
+            <RevenueChart dados={dadosGrafico} mostrarDespesa={verDespesas} />
           </div>
         </SecaoCard>
 

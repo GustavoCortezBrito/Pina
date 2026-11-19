@@ -33,14 +33,17 @@ const CAMPOS_PUBLICOS = {
   publicadoEm: true,
 } satisfies Prisma.ImovelSelect;
 
-/** O que o card da listagem precisa: campos públicos + só a foto de capa. */
+/** Quantas fotos o card carrega (a primeira é a capa; as outras aparecem na prévia ao passar o mouse). */
+const FOTOS_NO_CARD = 4;
+
+/** O que o card da listagem precisa: campos públicos + as primeiras fotos. */
 const SELECT_CARD = {
   ...CAMPOS_PUBLICOS,
   arquivos: {
     where: { categoria: "FOTO" },
     orderBy: [{ capa: "desc" }, { ordem: "asc" }],
     select: { id: true },
-    take: 1,
+    take: FOTOS_NO_CARD,
   },
 } satisfies Prisma.ImovelSelect;
 
@@ -92,6 +95,40 @@ export async function resumoVitrine() {
   const porTipo = Object.fromEntries(grupos.map((g) => [g.tipo, g._count._all])) as Partial<Record<TipoImovel, number>>;
   const total = grupos.reduce((soma, g) => soma + g._count._all, 0);
   return { total, porTipo };
+}
+
+/** O imóvel mais recente que já tem foto, para o destaque do topo da página inicial. */
+export async function destaqueVitrine() {
+  return db.imovel.findFirst({
+    where: { ...VISIVEL, arquivos: { some: { categoria: "FOTO" } } },
+    select: SELECT_CARD,
+    orderBy: [{ publicadoEm: "desc" }, { criadoEm: "desc" }],
+  });
+}
+
+/** Uma foto de capa para cada tipo de imóvel disponível (atalhos "explore por tipo"). */
+export async function capasPorTipo() {
+  const grupos = await db.imovel.groupBy({ by: ["tipo"], where: VISIVEL, _count: { _all: true } });
+  const capas = await Promise.all(
+    grupos.map(async (g) => {
+      const imovel = await db.imovel.findFirst({
+        where: { ...VISIVEL, tipo: g.tipo, arquivos: { some: { categoria: "FOTO" } } },
+        orderBy: { publicadoEm: "desc" },
+        select: { arquivos: { where: { categoria: "FOTO" }, orderBy: [{ capa: "desc" }, { ordem: "asc" }], select: { id: true }, take: 1 } },
+      });
+      return { tipo: g.tipo, total: g._count._all, foto: imovel?.arquivos[0]?.id ?? null };
+    }),
+  );
+  return capas.sort((a, b) => b.total - a.total);
+}
+
+/** Ids e datas dos imóveis visíveis, para o sitemap. */
+export async function imoveisParaSitemap() {
+  return db.imovel.findMany({
+    where: VISIVEL,
+    select: { id: true, publicadoEm: true, atualizadoEm: true },
+    orderBy: { publicadoEm: "desc" },
+  });
 }
 
 /** Outros imóveis para sugerir no fim da página de um imóvel (mesmo tipo primeiro). */

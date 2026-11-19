@@ -1,6 +1,7 @@
 import { BuildingIcon, FileSignatureIcon, HandCoinsIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { destinoSeguro } from "@/lib/destino";
 import { getSession } from "@/lib/session";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { LoginForm } from "./login-form";
@@ -15,7 +16,7 @@ const DESTAQUES = [
 
 export default async function LoginPage(props: PageProps<"/login">) {
   const { next } = await props.searchParams;
-  if (await getSession()) redirect(typeof next === "string" && next.startsWith("/") ? next : "/");
+  if (await getSession()) redirect(destinoSeguro(next));
 
   return (
     <main className="grid min-h-svh bg-background lg:grid-cols-[1.05fr_1fr]">
