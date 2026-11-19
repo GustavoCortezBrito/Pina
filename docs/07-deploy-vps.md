@@ -125,8 +125,7 @@ Confirme que a porta 3000 não responde por fora (`curl http://IP:3000` deve fal
 ### Criar os outros usuários
 
 ```bash
-npm run usuario:criar -- "Enivaldo Pina" enivaldopina@gmail.com admin
-npm run usuario:criar -- "Rafael Pina" rafaelpina2003@gmail.com admin
+npm run usuario:criar -- "Nome Completo" pessoa@exemplo.com.br admin
 ```
 
 O comando imprime uma senha temporária. Papéis: `admin`, `gerente`, `operador`, `site`.
