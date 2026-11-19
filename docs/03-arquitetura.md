@@ -11,15 +11,15 @@
 | Backend | **Node.js** no próprio Next.js: *Server Actions* para mutações e *Route Handlers* (`app/api/...`) para upload, download e PDF | Dispensa um serviço separado; o volume do sistema é pequeno |
 | Banco | **PostgreSQL 16+** | Robusto, gratuito e fácil de fazer backup |
 | ORM | **Prisma** | Migrations versionadas, tipagem forte e Prisma Studio para inspecionar dados |
-| Autenticação | **Auth.js (NextAuth)** com Credentials e sessão JWT, ou **Better Auth** | Login por e-mail e senha, sem dependência externa |
-| Arquivos | **Disco local da VPS** (volume Docker) por trás de uma interface `StorageProvider`; adaptador **S3/MinIO** opcional | Simples e barato, e troca de provedor sem mexer nas telas |
+| Autenticação | **Better Auth** (e-mail e senha, sem cadastro público) com os papéis `admin`, `gerente`, `operador` e `site` | Login sem dependência externa; quem pode o quê fica em `src/lib/permissions.ts` |
+| Arquivos | **Disco local da VPS** (pasta fora do código, definida em `STORAGE_LOCAL_PATH`) por trás de uma interface `StorageProvider`; adaptador **S3/MinIO** opcional | Simples e barato, e troca de provedor sem mexer nas telas |
 | Imagens | **sharp** | Converte para WebP, redimensiona e gera miniaturas; corrige rotação EXIF (fotos de celular) |
 | PDF | **@react-pdf/renderer** | Contratos e recibos gerados no servidor com componentes React |
 | Datas | **date-fns** + **@date-fns/tz** | Cálculo de vencimentos e formatação pt-BR |
 | Gráficos | **Recharts** | Integra bem com shadcn/ui (`chart`) |
 | Testes | **Vitest** (regras de negócio) + **Playwright** (fluxos principais) | Os cálculos financeiros **precisam** de testes |
 | Qualidade | ESLint + Prettier + Husky/lint-staged | Padroniza o código |
-| Infra | **Docker Compose** + **Caddy** (HTTPS automático) na VPS | Deploy reproduzível |
+| Infra | **Node + PostgreSQL nativos**, **systemd** e **Caddy** (HTTPS automático) na VPS, sem Docker | Poucas peças e fácil de operar; kit em `deploy/` |
 
 ### Por que não Python no backend?
 
@@ -29,9 +29,9 @@ Seria possível (FastAPI + SQLAlchemy), mas isso cria **dois projetos, dois depl
 
 | Critério | Supabase Cloud | Supabase self-hosted | **PostgreSQL + Prisma (escolhido)** |
 |----------|----------------|----------------------|-------------------------------------|
-| Custo | Grátis com limites (projeto pausa por inatividade); pago a partir de ~US$ 25/mês | Grátis, mas são cerca de 10 containers | Grátis, 1 container |
+| Custo | Grátis com limites (projeto pausa por inatividade); pago a partir de ~US$ 25/mês | Grátis, mas são cerca de 10 containers | Grátis, um único serviço |
 | Recursos de VPS | Nenhum | Altos (RAM) | Baixos |
-| Auth e Storage prontos | Sim | Sim | Via Auth.js + disco local |
+| Auth e Storage prontos | Sim | Sim | Via Better Auth + disco local |
 | Migração para a VPS | Exige exportar e adaptar | Já está lá | Já está lá |
 | Dependência de fornecedor | Média | Baixa | Nenhuma |
 
@@ -82,12 +82,12 @@ pinasystem/
 │   │   │   ├── relatorios/
 │   │   │   └── configuracoes/
 │   │   └── api/
-│   │       ├── auth/[...nextauth]/route.ts
+│   │       ├── auth/[...all]/route.ts
 │   │       ├── upload/route.ts
-│   │       ├── arquivos/[...path]/route.ts  # serve arquivo com checagem de sessão
+│   │       ├── arquivos/[id]/route.ts  # serve arquivo com checagem de sessão
 │   │       └── pdf/
 │   │           ├── contrato/[id]/route.ts
-│   │           └── recibo/[id]/route.ts
+│   │           └── recibo/[cobrancaId]/route.ts
 │   ├── components/
 │   │   ├── ui/                  # shadcn/ui
 │   │   ├── layout/              # sidebar, header, breadcrumbs
@@ -114,16 +114,16 @@ pinasystem/
 │   │   ├── format.ts            # moeda, data, CPF
 │   │   ├── validators.ts        # CPF, CNPJ
 │   │   └── permissions.ts
-│   └── middleware.ts            # redireciona quem não está logado
+│   └── proxy.ts                 # redireciona quem não está logado
 ├── tests/
 │   ├── unit/
 │   └── e2e/
-├── docker/
-│   ├── Dockerfile
+├── deploy/
 │   ├── Caddyfile
-│   └── backup.sh
-├── docker-compose.yml           # produção
-├── docker-compose.dev.yml       # apenas Postgres para dev
+│   ├── pinasystem.service       # serviço systemd
+│   ├── deploy.sh                # atualização na VPS
+│   ├── backup.sh                # backup diário
+│   └── env.production.example
 ├── .env.example
 └── docs/
 ```

@@ -14,24 +14,29 @@ Controla imóveis e suas fotos, inquilinos e fiadores, contratos, cobranças men
 | 4 | [Modelo de dados](docs/04-modelo-de-dados.md) | Entidades, relacionamentos e rascunho do schema Prisma |
 | 5 | [Telas e fluxos](docs/05-telas-e-fluxos.md) | Mapa de telas e fluxos principais |
 | 6 | [Roadmap](docs/06-roadmap.md) | Fases de entrega e checklist |
-| 7 | [Deploy na VPS](docs/07-deploy-vps.md) | Docker, proxy reverso, HTTPS e backups |
+| 7 | [Deploy na VPS](docs/07-deploy-vps.md) | Node + PostgreSQL + Caddy + systemd (sem Docker), HTTPS e backups |
 
 ## Stack em uma linha
 
-Next.js (App Router) + React + TypeScript + Tailwind CSS + shadcn/ui · API no próprio Next.js (Node) · PostgreSQL + Prisma · Auth.js · Docker Compose na VPS.
+Next.js (App Router) + React + TypeScript + Tailwind CSS + shadcn/ui · API no próprio Next.js (Node) · PostgreSQL + Prisma · Better Auth · Node, PostgreSQL e Caddy direto na VPS (sem Docker).
 
 ## Pastas de apoio
 
 - `PinaLogo/`: logotipo da marca (usado no layout, nos PDFs e no favicon)
 - `ImovelExemplo/`: fotos de um imóvel real, usadas no seed de desenvolvimento
 
-## Como rodar (quando o código existir)
+## Como rodar
+
+No desenvolvimento o PostgreSQL é embutido (sem Docker): o `npm run dev` já sobe o banco na porta 5433, com os dados em `~/.pinasystem/postgres`.
 
 ```bash
 cp .env.example .env          # preencher variáveis
-docker compose up -d db       # sobe o PostgreSQL local
 npm install
-npx prisma migrate dev        # cria as tabelas
-npm run db:seed               # dados de exemplo (usa ImovelExemplo/)
+npm run db:migrate            # cria as tabelas
+npm run db:seed               # administrador, modelos de contrato e dados de exemplo (usa ImovelExemplo/)
 npm run dev                   # http://localhost:3000
 ```
+
+Comandos úteis: `npm run db:start | db:stop | db:status`, `npm run usuario:criar -- "Nome" email@x.com admin`, `npm test`, `npm run typecheck`.
+
+Produção: veja [Deploy na VPS](docs/07-deploy-vps.md).

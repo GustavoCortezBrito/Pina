@@ -8,13 +8,13 @@ As estimativas consideram **um desenvolvedor em meio período**. Cada fase termi
 - [ ] Criar o repositório Git (GitHub privado)
 - [ ] `create-next-app` com TypeScript, Tailwind, ESLint e App Router, usando `src/`
 - [ ] Instalar shadcn/ui e definir o tema com as cores da logo
-- [ ] `docker-compose.dev.yml` com PostgreSQL; Prisma configurado
+- [ ] PostgreSQL embutido para desenvolvimento (`npm run db:start`); Prisma configurado
 - [ ] Prettier, Husky e Vitest
 - [ ] Layout base: sidebar, header, tema claro e escuro, responsivo
 
 ## Fase 1: Fundação (≈ 1 semana)
 - [ ] Schema Prisma inicial e primeira migration
-- [ ] Auth.js com credenciais, middleware de rotas e tela de login
+- [ ] Better Auth com e-mail e senha, middleware de rotas e tela de login
 - [ ] Seed: usuário admin, categorias de despesa, configurações padrão e um imóvel de exemplo com as fotos de `ImovelExemplo/`
 - [ ] `StorageProvider` local + `/api/upload` + `/api/arquivos` com sharp
 - [ ] Utilitários: formatação de moeda e data, validadores de CPF/CNPJ, máscaras
@@ -46,7 +46,7 @@ As estimativas consideram **um desenvolvedor em meio período**. Cada fase termi
 - **Entrega: MVP completo.**
 
 ## Fase 5: Produção (≈ 1 semana)
-- [ ] Dockerfile de produção (`output: "standalone"`)
+- [ ] Kit de deploy nativo em `deploy/` (systemd, Caddy, backup), sem Docker
 - [ ] VPS, domínio, Caddy e HTTPS
 - [ ] Backups automáticos com teste de restauração
 - [ ] Importação dos dados da planilha (script)

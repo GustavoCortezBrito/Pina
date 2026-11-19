@@ -130,5 +130,5 @@ Prioridade: **P1** = MVP, **P2** = logo após o MVP, **P3** = futuro.
 | RNF-04 | **LGPD**: dados pessoais (CPF, RG, renda, documentos) visíveis só para usuários logados, com auditoria de alterações e backups criptografados. |
 | RNF-05 | **Backup** diário do banco e dos arquivos, com retenção mínima de 30 dias e cópia fora da VPS. |
 | RNF-06 | **Desempenho**: listagens paginadas no servidor; imagens convertidas para WebP com miniaturas. |
-| RNF-07 | **Portabilidade**: todo o ambiente sobe com `docker compose up`, e trocar de VPS é só restaurar o backup. |
+| RNF-07 | **Portabilidade**: o ambiente roda com Node e PostgreSQL nativos (sem Docker), instalados pelo kit `deploy/`; trocar de VPS é reinstalar o kit e restaurar o backup. |
 | RNF-08 | Upload de até **10 MB** por imagem e **20 MB** por PDF; tipos permitidos: jpg, jpeg, png, webp, heic, pdf. |
